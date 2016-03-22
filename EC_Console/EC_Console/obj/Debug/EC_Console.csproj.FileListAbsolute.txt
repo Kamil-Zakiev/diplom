@@ -1,0 +1,6 @@
+c:\users\камиль\documents\visual studio 2013\Projects\EC_Console\EC_Console\bin\Debug\EC_Console.exe.config
+C:\Users\Камиль\Documents\Visual Studio 2013\Projects\EC_Console\EC_Console\obj\Debug\EC_Console.csprojResolveAssemblyReference.cache
+C:\Users\Камиль\Documents\Visual Studio 2013\Projects\EC_Console\EC_Console\bin\Debug\EC_Console.exe
+C:\Users\Камиль\Documents\Visual Studio 2013\Projects\EC_Console\EC_Console\bin\Debug\EC_Console.pdb
+C:\Users\Камиль\Documents\Visual Studio 2013\Projects\EC_Console\EC_Console\obj\Debug\EC_Console.exe
+C:\Users\Камиль\Documents\Visual Studio 2013\Projects\EC_Console\EC_Console\obj\Debug\EC_Console.pdb
