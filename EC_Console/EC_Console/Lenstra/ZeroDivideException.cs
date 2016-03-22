@@ -4,7 +4,7 @@ using System.Numerics;
 namespace EC_Console
 {
     /// <summary>
-    /// Исклю
+    /// Исключение для выхода из алгоритма Ленстры
     /// </summary>
     public class GCDFoundException: Exception
     {
@@ -12,7 +12,7 @@ namespace EC_Console
         public BigInteger GreatestCommonDivisor { get; set; }
         public GCDFoundException(BigInteger greatestCommonDivisor)
         {
-            Message = "Деление на ноль!";
+            Message = "Найден НОД!";
             this.GreatestCommonDivisor = greatestCommonDivisor;
         }
     }

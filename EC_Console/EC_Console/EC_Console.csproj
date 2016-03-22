@@ -42,16 +42,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BigIntegerExtensions.cs" />
-    <Compile Include="EllepticCurve.cs" />
-    <Compile Include="Lenstra.cs" />
-    <Compile Include="PointOfEC.cs" />
+    <Compile Include="Utils\BigIntegerExtensions.cs" />
+    <Compile Include="EllepticCurve\EllepticCurve.cs" />
+    <Compile Include="Lenstra\Lenstra.cs" />
+    <Compile Include="EllepticCurve\PointOfEC.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ZeroDivideException.cs" />
+    <Compile Include="Lenstra\ZeroDivideException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resource\TwoPrimesMultiple.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -58,8 +58,8 @@ namespace EC_Console
             return new PointOfEC()
             {
                 EllepticCurve = this.EllepticCurve,
-                X = this.X,
-                Y = (-1) * this.Y
+                X = X,
+                Y = -1 * Y
             };
         }
 
