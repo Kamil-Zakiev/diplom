@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace EC_Console
 {
@@ -24,16 +25,26 @@ namespace EC_Console
             //}
             #endregion
 
-            
-            //var divider = Lenstra.GetDivider(BigInteger.Parse("50521984138040381699131985921"));
-            for(var i =0; i< 10; i++)
-                new Thread(test).Start();
 
+            //var divider = Lenstra.GetDivider(BigInteger.Parse("50521984138040381699131985921"));
+            
+            //for(var i =0; i< 10; i++)
+            //  new Thread(test).Start();
+
+
+            //for (int i = 0; i < 10; i++)
+            //    ThreadPool.QueueUserWorkItem(new WaitCallback(test));
+            //Thread.Sleep(3000);
+
+            Task task = new Task(test);
+            task.Start();
+            Console.ReadLine();
+            Task.WaitAny();
         }
 
-        static void test()
+        public static void test()
         {
-            //throw new GCDFoundException(5);
+            Console.WriteLine("Hello from the thread pool.");
         }
     }
 }
