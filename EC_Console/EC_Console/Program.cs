@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Threading;
 
 namespace EC_Console
 {
@@ -24,7 +25,15 @@ namespace EC_Console
             #endregion
 
             
-            var divider = Lenstra.GetDivider(BigInteger.Parse("50521984138040381699131985921"));
+            //var divider = Lenstra.GetDivider(BigInteger.Parse("50521984138040381699131985921"));
+            for(var i =0; i< 10; i++)
+                new Thread(test).Start();
+
+        }
+
+        static void test()
+        {
+            //throw new GCDFoundException(5);
         }
     }
 }
