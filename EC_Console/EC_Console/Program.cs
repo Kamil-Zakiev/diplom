@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,10 @@ namespace EC_Console
     class Program
     {
         private static Lenstra Lenstra = new Lenstra();
+        private static BigInteger n;
+
+        private static Random random = new Random();
+        private static BigInteger gcd;
 
         static void Main(string[] args)
         {
@@ -26,25 +31,31 @@ namespace EC_Console
             #endregion
 
 
-            //var divider = Lenstra.GetDivider(BigInteger.Parse("50521984138040381699131985921"));
-            
-            //for(var i =0; i< 10; i++)
-            //  new Thread(test).Start();
+            var twoPrimeMultiplesStrings = File.ReadAllLines("Resource/TwoPrimesMultiple.txt");
+            Task[] tasks = new Task[24];
+            foreach (var twoPrimeMultiplesString in twoPrimeMultiplesStrings)
+            {
+                n = BigInteger.Parse(twoPrimeMultiplesString);
+                for (int i = 0; i < tasks.Length; i++)
+                {
+                    tasks[i] = Task.Factory.StartNew(test);
+                }
+                Task.WaitAny(tasks);
+                //for (int i = 0; i < tasks.Length; i++)
+                //{
+                //    if(!tasks[i].IsCompleted)
+                //        tasks[i].Dispose();
+                //}
+            }
 
 
-            //for (int i = 0; i < 10; i++)
-            //    ThreadPool.QueueUserWorkItem(new WaitCallback(test));
-            //Thread.Sleep(3000);
-
-            Task task = new Task(test);
-            task.Start();
-            Console.ReadLine();
-            Task.WaitAny();
         }
 
         public static void test()
         {
-            Console.WriteLine("Hello from the thread pool.");
+            var divider = Lenstra.GetDivider(n, random);
+            if (divider != BigInteger.One)
+                gcd = divider;
         }
     }
 }

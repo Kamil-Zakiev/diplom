@@ -5,17 +5,16 @@ namespace EC_Console
 {
     public class Lenstra
     {
-        public BigInteger B1 = BigInteger.Parse("10000000");
+        public BigInteger B1 = BigInteger.Parse("2000");
 
         /// <summary> 
         /// Возвращает делитель числа n. 
         /// Если делитель не найден, возвращается 1ца
         /// </summary>
         /// <param name="n">Число, у которого требуется найти делитель</param>
-        public BigInteger GetDivider(BigInteger n)
+        public BigInteger GetDivider(BigInteger n, Random random)
         {
             var startTime = DateTime.Now;
-            var random = new Random();
             BigInteger g, x, y, a, b;
             do
             {
