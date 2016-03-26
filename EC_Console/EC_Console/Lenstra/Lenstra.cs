@@ -5,7 +5,7 @@ namespace EC_Console
 {
     public class Lenstra
     {
-        public BigInteger B1 = BigInteger.Parse("2000");
+        public BigInteger B1 = BigInteger.Parse("10000");
 
         /// <summary> 
         /// Возвращает делитель числа n. 
@@ -61,6 +61,9 @@ namespace EC_Console
                 Console.WriteLine("{0}={1} * {2}", n, exc.GreatestCommonDivisor, n / exc.GreatestCommonDivisor);
                 return exc.GreatestCommonDivisor;
             }
+            var failRndTime = DateTime.Now;
+            Console.WriteLine("Затрачено времени {0} секунд", (failRndTime - startTime).TotalSeconds.ToString("F2"));
+            Console.WriteLine("Разложение числа {0} найти не удалось ", n);
             return BigInteger.One;
         }
     }

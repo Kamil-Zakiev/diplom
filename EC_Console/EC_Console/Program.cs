@@ -32,30 +32,36 @@ namespace EC_Console
 
 
             var twoPrimeMultiplesStrings = File.ReadAllLines("Resource/TwoPrimesMultiple.txt");
-            Task[] tasks = new Task[24];
+            //Task[] tasks = new Task[24];
+            //foreach (var twoPrimeMultiplesString in twoPrimeMultiplesStrings)
+            //{
+            //    n = BigInteger.Parse(twoPrimeMultiplesString);
+            //    for (int i = 0; i < tasks.Length; i++)
+            //    {
+            //        tasks[i] = new Task(() => test(n));
+            //    }
+            //}
+
+            Action[] actions = new Action[24];
             foreach (var twoPrimeMultiplesString in twoPrimeMultiplesStrings)
             {
                 n = BigInteger.Parse(twoPrimeMultiplesString);
-                for (int i = 0; i < tasks.Length; i++)
+                for (int i = 0; i < actions.Length; i++)
                 {
-                    tasks[i] = Task.Factory.StartNew(test);
+                    actions[i] = () => test(n);
                 }
-                Task.WaitAny(tasks);
-                //for (int i = 0; i < tasks.Length; i++)
-                //{
-                //    if(!tasks[i].IsCompleted)
-                //        tasks[i].Dispose();
-                //}
+                Parallel.Invoke(actions);
             }
-
+            
 
         }
 
-        public static void test()
+        public static void test(BigInteger n)
         {
             var divider = Lenstra.GetDivider(n, random);
             if (divider != BigInteger.One)
                 gcd = divider;
+            else Thread.Sleep(100000);
         }
     }
 }
