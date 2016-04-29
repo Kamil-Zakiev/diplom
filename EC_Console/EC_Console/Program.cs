@@ -11,7 +11,7 @@ namespace EC_Console
         private static Lenstra Lenstra = new Lenstra();
         private static BigInteger n;
 
-        private static Random random = new Random();
+        private static Random _random = new Random();
         private static BigInteger gcd;
 
         static void Main(string[] args)
@@ -32,36 +32,48 @@ namespace EC_Console
 
 
             var twoPrimeMultiplesStrings = File.ReadAllLines("Resource/TwoPrimesMultiple.txt");
-            //Task[] tasks = new Task[24];
-            //foreach (var twoPrimeMultiplesString in twoPrimeMultiplesStrings)
-            //{
-            //    n = BigInteger.Parse(twoPrimeMultiplesString);
-            //    for (int i = 0; i < tasks.Length; i++)
-            //    {
-            //        tasks[i] = new Task(() => test(n));
-            //    }
-            //}
-
-            Action[] actions = new Action[24];
+            Task[] tasks = new Task[4];
             foreach (var twoPrimeMultiplesString in twoPrimeMultiplesStrings)
             {
                 n = BigInteger.Parse(twoPrimeMultiplesString);
-                for (int i = 0; i < actions.Length; i++)
+                var cts = new CancellationTokenSource();
+                for (int i = 0; i < tasks.Length; i++)
                 {
-                    actions[i] = () => test(n);
+                    tasks[i] = Task.Factory.StartNew(() => test(n, cts.Token, cts), cts.Token);
                 }
-                Parallel.Invoke(actions);
+                //ждем, пока все потоки выполнятся(отменятся)
+                Task.WaitAll(tasks);
+                Console.WriteLine();
+                cts.Dispose();
             }
-            
 
+            
+            
         }
 
-        public static void test(BigInteger n)
+        public static void test(BigInteger n, CancellationToken token, CancellationTokenSource cts)
         {
-            var divider = Lenstra.GetDivider(n, random);
+            var divider = Lenstra.GetDivider(n, _random, token);
             if (divider != BigInteger.One)
+            {
+                //Если нашли делитель, то запоминаем его и отменяем оставшиеся потоки
                 gcd = divider;
-            else Thread.Sleep(100000);
+                cts.Cancel();
+            }
+        }
+
+        public static void test2(object obj)
+        {
+            var token = (CancellationToken) obj;
+            int i = 0;
+            while (true)
+            {
+                while (token.IsCancellationRequested)
+                {
+                    Console.WriteLine("Cancel has been requested");
+                }
+                i++;
+            }
         }
     }
 }

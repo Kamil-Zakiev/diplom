@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Numerics;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EC_Console
 {
     public class Lenstra
     {
-        public BigInteger B1 = BigInteger.Parse("10000");
+        public BigInteger B1 = BigInteger.Parse("100000");
 
         /// <summary> 
         /// Возвращает делитель числа n. 
         /// Если делитель не найден, возвращается 1ца
         /// </summary>
         /// <param name="n">Число, у которого требуется найти делитель</param>
-        public BigInteger GetDivider(BigInteger n, Random random)
+        public BigInteger GetDivider(BigInteger n, Random random, CancellationToken token)
         {
             var startTime = DateTime.Now;
             BigInteger g, x, y, a, b;
@@ -22,8 +24,8 @@ namespace EC_Console
                 y = BigIntegerExtensions.GetNextRandom(random, n);
                 a = BigIntegerExtensions.GetNextRandom(random, n);
 
-                b = BigIntegerExtensions.Mod(y*y - x*x*x - a*x, n);
-                g = BigInteger.GreatestCommonDivisor(n, 4*a*a*a + 27*b*b);
+                b = BigIntegerExtensions.Mod(y * y - x * x * x - a * x, n);
+                g = BigInteger.GreatestCommonDivisor(n, 4 * a * a * a + 27 * b * b);
             } while (g == n);
 
             try
@@ -41,7 +43,7 @@ namespace EC_Console
                 var P = new PointOfEC(p0);
 
                 BigInteger p = 2;
-                while (p < B1)
+                while (p < B1 && !token.IsCancellationRequested)
                 {
                     var pr = p;
                     while (pr < B1)
@@ -61,6 +63,10 @@ namespace EC_Console
                 Console.WriteLine("{0}={1} * {2}", n, exc.GreatestCommonDivisor, n / exc.GreatestCommonDivisor);
                 return exc.GreatestCommonDivisor;
             }
+
+            if (token.IsCancellationRequested)
+                Console.WriteLine("Поток {0} остановлен", Task.CurrentId);
+
             var failRndTime = DateTime.Now;
             Console.WriteLine("Затрачено времени {0} секунд", (failRndTime - startTime).TotalSeconds.ToString("F2"));
             Console.WriteLine("Разложение числа {0} найти не удалось ", n);
