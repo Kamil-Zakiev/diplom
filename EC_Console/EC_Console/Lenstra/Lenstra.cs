@@ -7,7 +7,7 @@ namespace EC_Console
 {
     public class Lenstra
     {
-        public BigInteger B1 = BigInteger.Parse("100000");
+        public BigInteger B1 = BigInteger.Parse("1000000");
 
         /// <summary> 
         /// Возвращает делитель числа n. 
@@ -56,20 +56,23 @@ namespace EC_Console
             }
             catch (GCDFoundException exc)
             {
-                var endTime = DateTime.Now;
-                Console.WriteLine("Затрачено времени {0} секунд", (endTime - startTime).TotalSeconds.ToString("F2"));
-                Console.WriteLine("Найдено значение НОД(х2-х1, n) = {0}", exc.GreatestCommonDivisor);
-                Console.WriteLine("Разложение числа {0}", n);
-                Console.WriteLine("{0}={1} * {2}", n, exc.GreatestCommonDivisor, n / exc.GreatestCommonDivisor);
+                //var endTime = DateTime.Now;
+                //Console.WriteLine("Затрачено времени {0} секунд", (endTime - startTime).TotalSeconds.ToString("F2"));
+                //Console.WriteLine("Найдено значение НОД(х2-х1, n) = {0}", exc.GreatestCommonDivisor);
+                //Console.WriteLine("Разложение числа {0}", n);
+                Console.WriteLine("Поток {0} молодец: {1} = {2} * {3}", 
+                    Task.CurrentId, n, exc.GreatestCommonDivisor, n / exc.GreatestCommonDivisor);
                 return exc.GreatestCommonDivisor;
             }
 
+
             if (token.IsCancellationRequested)
                 Console.WriteLine("Поток {0} остановлен", Task.CurrentId);
-
+            else
+                Console.WriteLine("Поток {0} не смог", Task.CurrentId);
             var failRndTime = DateTime.Now;
-            Console.WriteLine("Затрачено времени {0} секунд", (failRndTime - startTime).TotalSeconds.ToString("F2"));
-            Console.WriteLine("Разложение числа {0} найти не удалось ", n);
+            //Console.WriteLine("Затрачено времени {0} секунд", (failRndTime - startTime).TotalSeconds.ToString("F2"));
+            //Console.WriteLine("Разложение числа {0} найти не удалось ", n);
             return BigInteger.One;
         }
     }
