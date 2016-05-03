@@ -13,7 +13,7 @@ namespace EC_Console
         private static BigInteger n;
 
         private static Random _random = new Random();
-        private static BigInteger gcd;
+        private static BigInteger gcd=1;
 
         static void Main(string[] args)
         {

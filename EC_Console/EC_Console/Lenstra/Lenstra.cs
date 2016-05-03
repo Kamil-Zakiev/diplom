@@ -7,7 +7,7 @@ namespace EC_Console
 {
     public class Lenstra
     {
-        public BigInteger B1 = BigInteger.Parse("1000000");
+        public BigInteger B1 = BigInteger.Parse("10");
 
         /// <summary> 
         /// Возвращает делитель числа n. 
