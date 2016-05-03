@@ -31,7 +31,6 @@ namespace EC_Console
             //}
             #endregion
 
-            StringBuilder stringBuilder = new StringBuilder();
 
             var twoPrimeMultiplesStrings = File.ReadAllLines("Resource/TwoPrimesMultiple.txt");
             Task[] tasks = new Task[10];
@@ -48,17 +47,19 @@ namespace EC_Console
                 Task.WaitAny(tasks);
                 var end = DateTime.Now;
 
-                if(gcd != BigInteger.One)
-                    stringBuilder.Append(string.Format("Число {0} = {1} * {2}\n", n, gcd, n/gcd));
+                StringBuilder stringBuilder = new StringBuilder();
+                if (gcd != BigInteger.One)
+                    stringBuilder.AppendLine(string.Format("Число {0} = {1} * {2}", n, gcd, n / gcd));
                 else
-                    stringBuilder.Append(string.Format("Число {0} не разложено\n", n));
-                stringBuilder.Append(string.Format("Потрачено {0} секунд\n\n", (end - start).TotalSeconds));
+                    stringBuilder.AppendLine(string.Format("Число {0} не разложено", n));
+                stringBuilder.AppendLine(string.Format("Потрачено {0} секунд", (end - start).TotalSeconds));
+                stringBuilder.AppendLine("");
+
+                File.AppendAllText("Resource/Отчет.txt", stringBuilder.ToString());
 
                 Console.WriteLine("Потрачено {0} секунд\n", (end - start).TotalSeconds);
                 cts.Dispose();
             }
-
-            File.WriteAllText("Отчет.txt", stringBuilder.ToString());
 
         }
 
