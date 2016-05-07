@@ -9,31 +9,32 @@ namespace EC_Console
     {
         public BigInteger B1 = BigInteger.Parse("100000");
 
-        /// <summary> 
-        /// Возвращает делитель числа n. 
-        /// Если делитель не найден, возвращается 1ца
-        /// </summary>
+        /// <summary>  Возвращает объект LenstraResultOfEllepticCurve </summary>
         /// <param name="n">Число, у которого требуется найти делитель</param>
-        public BigInteger GetDivider(BigInteger n, Random random, CancellationToken token)
+        public LenstraResultOfEllepticCurve GetDivider(BigInteger n, Random random, CancellationToken token)
         {
             var startTime = DateTime.Now;
             BigInteger g, x, y, a, b;
+            int k = 0;
             do
             {
                 x = BigIntegerExtensions.GetNextRandom(random, n);
                 y = BigIntegerExtensions.GetNextRandom(random, n);
                 a = BigIntegerExtensions.GetNextRandom(random, n);
+                k++;
 
                 b = BigIntegerExtensions.Mod(y * y - x * x * x - a * x, n);
                 g = BigInteger.GreatestCommonDivisor(n, 4 * a * a * a + 27 * b * b);
             } while (g == n);
 
+            //убираем влияние выбора рандомного числа на время работы алгоритма
+            startTime = startTime + new TimeSpan(0, 0, 0, k*3);
+            EllepticCurve ec = null;
             try
             {
                 if (g != 1)
                     throw new GCDFoundException(g);
-                //var ec = new EllepticCurve(5, -5, n);
-                var ec = new EllepticCurve(a, b, n);
+                ec = new EllepticCurve(a, b, n);
                 var p0 = new PointOfEC()
                 {
                     EllepticCurve = ec,
@@ -56,24 +57,29 @@ namespace EC_Console
             }
             catch (GCDFoundException exc)
             {
-                //var endTime = DateTime.Now;
-                //Console.WriteLine("Затрачено времени {0} секунд", (endTime - startTime).TotalSeconds.ToString("F2"));
-                //Console.WriteLine("Найдено значение НОД(х2-х1, n) = {0}", exc.GreatestCommonDivisor);
-                //Console.WriteLine("Разложение числа {0}", n);
                 Console.WriteLine("Поток {0} молодец: {1} = {2} * {3}", 
                     Task.CurrentId, n, exc.GreatestCommonDivisor, n / exc.GreatestCommonDivisor);
-                return exc.GreatestCommonDivisor;
-            }
 
+                return new LenstraResultOfEllepticCurve
+                {
+                    EllepticCurve = ec,
+                    TargetNumber = n,
+                    Divider = exc.GreatestCommonDivisor,
+                    WastedTime = DateTime.Now - startTime
+                };
+            }
 
             if (token.IsCancellationRequested)
                 Console.WriteLine("Поток {0} остановлен", Task.CurrentId);
             else
                 Console.WriteLine("Поток {0} не смог", Task.CurrentId);
-            var failRndTime = DateTime.Now;
-            //Console.WriteLine("Затрачено времени {0} секунд", (failRndTime - startTime).TotalSeconds.ToString("F2"));
-            //Console.WriteLine("Разложение числа {0} найти не удалось ", n);
-            return BigInteger.One;
+
+            return new LenstraResultOfEllepticCurve
+            {
+                EllepticCurve = ec,
+                TargetNumber = n,
+                WastedTime = DateTime.Now - startTime
+            };
         }
     }
 }

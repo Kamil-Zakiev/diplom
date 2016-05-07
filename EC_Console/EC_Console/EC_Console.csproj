@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lenstra\LenstraResultOfEllepticCurve.cs" />
     <Compile Include="Utils\BigIntegerExtensions.cs" />
     <Compile Include="EllepticCurve\EllepticCurve.cs" />
     <Compile Include="Lenstra\Lenstra.cs" />
