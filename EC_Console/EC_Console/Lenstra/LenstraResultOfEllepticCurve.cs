@@ -20,5 +20,10 @@ namespace EC_Console
 
         /// <summary> Успех? </summary>
         public bool Success { get { return Divider != BigInteger.One; } }
+
+        public override string ToString()
+        {
+            return string.Format("Success = {0},  Divider = {1},  WastedTime= {2} ", Success, Divider, WastedTime);
+        }
     }
 }

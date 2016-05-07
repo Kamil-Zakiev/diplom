@@ -11,7 +11,7 @@ namespace EC_Console
 
         /// <summary>  Возвращает объект LenstraResultOfEllepticCurve </summary>
         /// <param name="n">Число, у которого требуется найти делитель</param>
-        public LenstraResultOfEllepticCurve GetDivider(BigInteger n, Random random, CancellationToken token)
+        public LenstraResultOfEllepticCurve GetDivider(BigInteger n, Random random)
         {
             var startTime = DateTime.Now;
             BigInteger g, x, y, a, b;
@@ -44,7 +44,7 @@ namespace EC_Console
                 var P = new PointOfEC(p0);
 
                 BigInteger p = 2;
-                while (p < B1 && !token.IsCancellationRequested)
+                while (p < B1)
                 {
                     var pr = p;
                     while (pr < B1)
@@ -68,11 +68,6 @@ namespace EC_Console
                     WastedTime = DateTime.Now - startTime
                 };
             }
-
-            if (token.IsCancellationRequested)
-                Console.WriteLine("Поток {0} остановлен", Task.CurrentId);
-            else
-                Console.WriteLine("Поток {0} не смог", Task.CurrentId);
 
             return new LenstraResultOfEllepticCurve
             {
