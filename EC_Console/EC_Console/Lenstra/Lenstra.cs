@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace EC_Console
 
         /// <summary>  Возвращает объект LenstraResultOfEllepticCurve </summary>
         /// <param name="n">Число, у которого требуется найти делитель</param>
-        public LenstraResultOfEllepticCurve GetDivider(BigInteger n, Random random)
+        public LenstraResultOfEllepticCurve GetDivider(BigInteger n, Random random, EllepticCurve ellepricCurve = null)
         {
             var startTime = DateTime.Now;
             BigInteger g, x, y, a, b;
@@ -29,18 +30,21 @@ namespace EC_Console
 
             //убираем влияние выбора рандомного числа на время работы алгоритма
             startTime = startTime + new TimeSpan(0, 0, 0, k*3);
+
             EllepticCurve ec = null;
             try
             {
                 if (g != 1)
                     throw new GCDFoundException(g);
                 ec = new EllepticCurve(a, b, n);
-                var p0 = new PointOfEC()
+                var p0 = new PointOfEC
                 {
                     EllepticCurve = ec,
                     X = x,
                     Y = y
                 };
+                ec.Basis = p0;
+
                 var P = new PointOfEC(p0);
 
                 BigInteger p = 2;

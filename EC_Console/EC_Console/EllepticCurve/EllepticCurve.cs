@@ -8,6 +8,9 @@ namespace EC_Console
     ///</summary>
     public class EllepticCurve
     {
+        /// <summary> Генератор </summary>
+        public PointOfEC Basis;
+
         /// <summary> a принадлежит множеству F_q</summary>
         private BigInteger a;
 

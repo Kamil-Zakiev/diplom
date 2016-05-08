@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Lenstra\LenstraResultOfEllepticCurve.cs" />
+    <Compile Include="Lenstra\MultithreadLenstra.cs" />
     <Compile Include="Utils\BigIntegerExtensions.cs" />
     <Compile Include="EllepticCurve\EllepticCurve.cs" />
     <Compile Include="Lenstra\Lenstra.cs" />
