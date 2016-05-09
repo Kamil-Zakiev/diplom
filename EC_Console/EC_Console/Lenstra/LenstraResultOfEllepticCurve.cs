@@ -9,6 +9,9 @@ namespace EC_Console
         /// <summary> Факторизуемое число </summary>
         public BigInteger TargetNumber;
 
+        /// <summary> Разрядность факторизуемого числа </summary>
+        public int TargetNumberDigitsCount { get { return TargetNumber.ToString().Length; } }
+
         /// <summary> Эллиптическая кривая </summary>
         public EllepticCurve EllepticCurve;
 
@@ -17,6 +20,9 @@ namespace EC_Console
 
         /// <summary> Делитель </summary>
         public BigInteger Divider = BigInteger.One;
+
+        /// <summary> Разрядность делителя факторизуемого числа </summary>
+        public int DividerDigitsCount { get { return Divider.ToString().Length; } }
 
         /// <summary> Успех? </summary>
         public bool Success { get { return Divider != BigInteger.One; } }

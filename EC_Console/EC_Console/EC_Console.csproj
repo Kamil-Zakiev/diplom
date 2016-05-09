@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="Lenstra\LenstraResultOfEllepticCurve.cs" />
     <Compile Include="Lenstra\MultithreadLenstra.cs" />
+    <Compile Include="Resource\TwoPrimesMultipleGenerator.cs" />
     <Compile Include="Utils\BigIntegerExtensions.cs" />
     <Compile Include="EllepticCurve\EllepticCurve.cs" />
     <Compile Include="Lenstra\Lenstra.cs" />
@@ -56,6 +57,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resource\TwoPrimesMultiple10.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resource\TwoPrimesMultiple.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
