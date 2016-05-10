@@ -6,7 +6,7 @@ namespace EC_Console
 {
     public class TwoPrimesMultipleGenerator
     {
-        public static void GenerateTwoPrimesMultipleNumbers(string path, int dividerSize)
+        public static void GenerateTwoPrimesMultipleNumbersInFile(string path, int dividerSize)
         {
             var start = BigIntegerExtensions.NextPrimaryMillerRabin(BigInteger.Pow(10, dividerSize));
             //генерим 100 чисел

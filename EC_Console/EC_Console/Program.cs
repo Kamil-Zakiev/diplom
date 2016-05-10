@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 
 namespace EC_Console
 {
@@ -8,13 +10,18 @@ namespace EC_Console
     {
         static void Main(string[] args)
         {
+            for (int i = 10; i <= 40; i = i + 2)
+            {
+                var path = string.Format("TwoPrimesMultiple/{0}digitsNumbers.txt", i);
+                TwoPrimesMultipleGenerator.GenerateTwoPrimesMultipleNumbersInFile(path, i/2);
+            }
+
             var results = new List<LenstraResultOfEllepticCurve>();
-            //for (int i = 10; i <= 20; i=i+2)
-            //{
-            //    var path = string.Format("TwoPrimesMultiple/{0}digitsNumbers.txt", i);
-            //    results.AddRange(MultithreadLenstra.UseThreadsParallelism(path, threadsCount: 4));
-            //}
-            results.AddRange(MultithreadLenstra.UseThreadsParallelism("TwoPrimesMultiple/14digitsNumbers.txt", threadsCount: 10));
+            for (int i = 10; i <= 40; i=i+2)
+            {
+                var path = string.Format("TwoPrimesMultiple/{0}digitsNumbers.txt", i);
+                results.AddRange(MultithreadLenstra.UseThreadsParallelism(path, threadsCount: 10));
+            }
 
             var groupResult = results
                 .Where(x => x.Success)
@@ -41,6 +48,8 @@ namespace EC_Console
                         minSeconds = minSeconds
                     };
                 }).ToList();
+            var strList = groupResult.Select(x => x.dividerDigits + "\t" + string.Join(",", x.hist));
+            File.WriteAllLines("Result.txt", strList, Encoding.UTF8);
         }
     }
 }
