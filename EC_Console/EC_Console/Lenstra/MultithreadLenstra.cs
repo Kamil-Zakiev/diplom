@@ -20,7 +20,7 @@ namespace EC_Console
         {
             var twoPrimeMultiplesStrings = File.ReadAllLines(pathTwoPrimesMultiple);
             var list = new List<LenstraResultOfEllepticCurve>();
-            foreach (var n in twoPrimeMultiplesStrings.Select(BigInteger.Parse))
+            foreach (var n in twoPrimeMultiplesStrings.Select(BigInteger.Parse).Take(10))
             {
                 list.AddRange(LenstraMultiThreadResults(n, threadsCount));
             }

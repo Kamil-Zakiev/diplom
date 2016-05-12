@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 
 namespace EC_Console
@@ -10,19 +9,21 @@ namespace EC_Console
     {
         static void Main(string[] args)
         {
-            for (int i = 10; i <= 40; i = i + 2)
+            //генерирование
+            for (int i = 10; i <= 40; i = i + 5)
             {
                 var path = string.Format("TwoPrimesMultiple/{0}digitsNumbers.txt", i);
                 TwoPrimesMultipleGenerator.GenerateTwoPrimesMultipleNumbersInFile(path, i/2);
             }
 
+            //факторизация
             var results = new List<LenstraResultOfEllepticCurve>();
-            for (int i = 10; i <= 40; i=i+2)
+            foreach (var path in Directory.GetFiles("TwoPrimesMultiple"))
             {
-                var path = string.Format("TwoPrimesMultiple/{0}digitsNumbers.txt", i);
                 results.AddRange(MultithreadLenstra.UseThreadsParallelism(path, threadsCount: 10));
             }
 
+            //обработка результатов
             var groupResult = results
                 .Where(x => x.Success)
                 .GroupBy(x => x.DividerDigitsCount,
@@ -48,7 +49,9 @@ namespace EC_Console
                         minSeconds = minSeconds
                     };
                 }).ToList();
-            var strList = groupResult.Select(x => x.dividerDigits + "\t" + string.Join(",", x.hist));
+
+            //сохранение результатов
+            var strList = groupResult.Select(x => x.dividerDigits + "\t" + string.Join(",", x.hist)+ "\t" + x.averageSecondsOfSuccess + "\t" + x.maxSeconds);
             File.WriteAllLines("Result.txt", strList, Encoding.UTF8);
         }
     }
