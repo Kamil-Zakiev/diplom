@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Threading;
 
@@ -10,9 +12,9 @@ namespace EC_Console
         /// <summary> Число "а" по модулю "р" </summary>
         public static BigInteger Mod(BigInteger a, BigInteger p)
         {
-            if (a.Sign > 0)
-                return a%p;
-            return a%p + p;
+            if (a.Sign >= 0)
+                return a % p;
+            return a % p + p;
         }
 
         /// <summary> Найти обратный элемент к "а" в поле размерности "p" </summary>
@@ -22,11 +24,11 @@ namespace EC_Console
         {
             if (a < 0)
             {
-                a = a%p + p;
+                a = a % p + p;
             }
             if (a > p)
             {
-                a = a%p;
+                a = a % p;
             }
             BigInteger d, x, y;
             ExtendedEuclid(a, p, out x, out y, out d);
@@ -35,7 +37,7 @@ namespace EC_Console
 
             return 0;
         }
-        
+
         /// <summary>
         /// Расширенный алгоритм Евклида
         /// ax+by=GCA(a,b)
@@ -74,9 +76,9 @@ namespace EC_Console
         /// Возвращает случайное число меньшее 'n'
         /// </summary>
         /// <param name="random"> Объект - генератор случайных чисел </param>
-        public static BigInteger GetNextRandom(Random random, BigInteger n)
+        public static BigInteger GetNextRandom(Random random, BigInteger n, int time = 1000)
         {
-            Thread.Sleep(1000);
+            Thread.Sleep(time);
             var bytesN = n.ToByteArray();
             var bytesa = new byte[bytesN.Length];
             random.NextBytes(bytesa);
@@ -109,7 +111,7 @@ namespace EC_Console
         /// Проверка простоты Миллера-Рабина. 
         /// По умолчанию проводится 100 раундов
         /// </summary>
-        private static bool IsPrimaryMillerRabin(BigInteger n, int k = 100)
+        public static bool IsPrimaryMillerRabin(BigInteger n, int k = 100)
         {
             if (n <= 1)
                 return false;
@@ -158,6 +160,136 @@ namespace EC_Console
                 R += 2;
 
             return R;
+        }
+
+        [Obsolete("Не работает корректно")]
+        public static int Jacobi(long a, long n)
+        {
+            int s = 0; long b = a, e = 0, m, n1;
+            if (a == 0)
+                return 0;
+            if (a == 1)
+                return 1;
+            while ((b & 1) == 0)
+            {
+                b >>= 1;
+                e++;
+            }
+            long a1 = b;
+            m = n % 8;
+            if ((e & 1) != 0)
+                s = 1;
+            else
+                if (m == 1 || m == 7)
+                    s = +1;
+                else
+                    if (m == 3 || m == 5)
+                        s = -1;
+            if (n % 4 == 3 && a1 % 4 == 3)
+                s = -s;
+            if (a1 != 1)
+                n1 = n % a1;
+            else n1 = 1;
+            return s * Jacobi(n1, a1);
+        }
+
+        /* Precondition: a, n >= 0; n is odd */
+        public static long jacobi(long a, long n)
+        {
+            long ans = 0;
+
+            if (a == 0)
+                ans = (n == 1) ? 1 : 0;
+            else if (a == 2)
+            {
+                switch (n % 8)
+                {
+                    case 1:
+                    case 7:
+                        ans = 1;
+                        break;
+                    case 3:
+                    case 5:
+                        ans = -1;
+                        break;
+                }
+            }
+            else if (a >= n)
+                ans = jacobi(a % n, n);
+            else if (a % 2 == 0)
+                ans = jacobi(2, n) * jacobi(a / 2, n);
+            else
+                ans = (a % 4 == 3 && n % 4 == 3) ? -jacobi(n, a) : jacobi(n, a);
+            return ans;
+        }
+
+
+        public static Dictionary<BigInteger, int> Factorize(BigInteger n)
+        {
+            _pR = new Dictionary<BigInteger, int>();
+            if (IsPrimaryMillerRabin(n))
+            {
+                _pR.Add(n,1);
+                return _pR;
+            }
+            foreach (var i in new BigInteger[] { 2, 3, 5, 7, 11 })
+            {
+                if (n % i == 0)
+                {
+                    _pR.Add(i, 1);
+                    n /= i;
+                }
+            }
+            foreach (var i in new BigInteger[] { 2, 3, 5, 7, 11 })
+            {
+                while (n % i == 0)
+                {
+                    _pR[i]++;
+                    n /= i;
+                }
+            }
+            if (IsPrimaryMillerRabin(n))
+            {
+                _pR.Add(n, 1);
+                return _pR;
+            }
+
+            FactorizeInner(n);
+            return _pR;
+        }
+
+        private static Dictionary<BigInteger, int> _pR;
+        private static void FactorizeInner(BigInteger n)
+        {
+            if (n == BigInteger.One)
+                return;
+            if (IsPrimaryMillerRabin(n))
+            {
+                _pR.Add(n, 1);
+                return;
+            }
+            //TODO: call Lenstra Algorythm with cancellation token realization
+            var result = MultithreadLenstra.LenstraMultiThreadResults(n, 16).FirstOrDefault(x => x.Success);
+            if (result != null)
+            {
+                var divider = result.Divider;
+                if (IsPrimaryMillerRabin(divider))
+                {
+                    _pR.Add(divider, 1);
+                    n /= divider;
+                    while (n % divider == 0)
+                    {
+                        _pR[divider]++;
+                        n /= divider;
+                    }
+                    FactorizeInner(n);
+                }
+                else
+                {
+                    FactorizeInner(n / divider);
+                    FactorizeInner(divider);
+                }
+            }
         }
     }
 }

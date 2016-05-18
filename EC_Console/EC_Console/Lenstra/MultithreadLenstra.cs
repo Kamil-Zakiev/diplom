@@ -31,8 +31,10 @@ namespace EC_Console
         /// <summary> Факторизация методом Ленстры </summary>
         /// <param name="n">Число, которое необходимо факторизовать</param>
         /// <param name="threadsCount">Количество потоков</param>
-        private static IEnumerable<LenstraResultOfEllepticCurve> LenstraMultiThreadResults(BigInteger n, int threadsCount)
+        public static IEnumerable<LenstraResultOfEllepticCurve> LenstraMultiThreadResults(BigInteger n, int threadsCount)
         {
+            if(n == BigInteger.One)
+                throw new Exception("LenstraMultiThreadResults: n == BigInteger.One");
             if(threadsCount < 1)
                 throw new Exception("Количество потоков не может быть < 1");
 

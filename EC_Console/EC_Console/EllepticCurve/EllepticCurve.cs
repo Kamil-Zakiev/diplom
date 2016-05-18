@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Numerics;
+using System.Security.Cryptography.X509Certificates;
 
 namespace EC_Console
 {
@@ -50,16 +52,40 @@ namespace EC_Console
             this.b = b;
             //TODO: проверять ли на простоту число р?
             this.p = p;
+
+            //this.Basis = CreateBasis();
         }
 
+        private long tenExp = 1000000000000000000;
+
+        public void CreateBasis()
+        {
+            BigInteger x = 0;
+            var y = Math.Sqrt((double)BigIntegerExtensions.Mod(x * x * x + a * x + b, p));
+            while (x < p && ((long)(y * tenExp) % tenExp != 0))
+            {
+                x++;
+                y = Math.Sqrt((double)BigIntegerExtensions.Mod(x * x * x + a * x + b, p));
+            }
+            Basis = CreatePoint(x, (BigInteger)y);
+        }
+
+        /// <summary> Содержит ли ЭК точку? </summary>
+        /// <param name="X">координата Х</param>
+        /// <param name="Y">координата Y</param>
+        /// <returns></returns>
+        public bool ContainsPoint(BigInteger X, BigInteger Y)
+        {
+            return BigIntegerExtensions.Mod(Y * Y, p) == BigIntegerExtensions.Mod(X * X * X + a * X + b, p);
+        }
 
         public PointOfEC CreatePoint(BigInteger X, BigInteger Y)
         {
             //проверим принадлежность точки (x,y) эллиптической кривой 
-            if (BigIntegerExtensions.Mod(Y * Y, p) != BigIntegerExtensions.Mod(X * X * X + a * X + b, p))
+            if (!ContainsPoint(X, Y))
                 throw new Exception(
                     string.Format("Точка ({0},{1}) не принадлежит кривой y^2 = x^3 + {2} * x + {3}",
-                    X, Y, a, b));
+                        X, Y, a, b));
 
             return new PointOfEC()
             {
@@ -142,6 +168,81 @@ namespace EC_Console
                 k /= 2;
             }
             return q;
+        }
+
+        private BigInteger _pointsCount;
+
+        /// <summary> 
+        /// Количество точек ЭК
+        /// символ лежандра
+        /// </summary> 
+        public BigInteger CountPoints
+        {
+            get
+            {
+                if (_pointsCount != BigInteger.Zero)
+                    return _pointsCount;
+                if (!BigIntegerExtensions.IsPrimaryMillerRabin(this.p))
+                    throw new Exception("НЕ ИСПОЛЬЗОВАТЬ");
+
+                long count = 0;
+                var pLong = (long)p;
+                for (long x = 0; x < p; x++)
+                {
+                    var z = (long)BigIntegerExtensions.Mod(x * x * x + a * x + b, p);
+                    if (z == 0)
+                        count++;
+                    else
+                    {
+                        var legendreSymbol = BigIntegerExtensions.jacobi(z, pLong);
+                        if (legendreSymbol == 1)
+                            count += 2;
+                    }
+                }
+                count++; //учитываем бесконечно удаленную точку
+                _pointsCount = count;
+                return _pointsCount;
+
+            }
+        }
+
+        public PointOfEC LenstraStartingPoint { get; set; }
+
+        private LenstraEdges _lenstraEdges;
+
+        /// <summary> Границы метода Ленстры </summary>
+        public LenstraEdges LenstraEdges
+        {
+            get
+            {
+                if (_lenstraEdges != null)
+                    return _lenstraEdges;
+
+                var pointsCount = this.CountPoints;
+                //разложение числа pointsCount
+                var pRs = BigIntegerExtensions.Factorize(pointsCount).OrderBy(x => x.Key);
+                if (pRs.Count() == 1)
+                {
+                    _lenstraEdges = new LenstraEdges()
+                    {
+                        B1 = BigInteger.Pow(pRs.First().Key, pRs.First().Value),
+                        B2 = 1
+                    };
+                    return _lenstraEdges;
+                }
+                var b1 = pRs.Take(pRs.Count() - 1).Max(x => BigInteger.Pow(x.Key, x.Value));
+                var lastPR = pRs.Skip(pRs.Count() - 1).First();
+                BigInteger b2 = 1;
+                if (lastPR.Value == 1 && lastPR.Key > b1)
+                    b2 = lastPR.Key;
+
+                _lenstraEdges = new LenstraEdges()
+                {
+                    B1 = b1,
+                    B2 = b2
+                };
+                return _lenstraEdges;
+            }
         }
 
     }

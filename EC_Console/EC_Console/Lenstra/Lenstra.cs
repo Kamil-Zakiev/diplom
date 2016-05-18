@@ -43,7 +43,7 @@ namespace EC_Console
                     X = x,
                     Y = y
                 };
-                ec.Basis = p0;
+                ec.LenstraStartingPoint = p0;
 
                 var P = new PointOfEC(p0);
 
@@ -80,5 +80,11 @@ namespace EC_Console
                 WastedTime = DateTime.Now - startTime
             };
         }
+    }
+
+    public class LenstraEdges
+    {
+        public BigInteger B1;
+        public BigInteger B2;
     }
 }
