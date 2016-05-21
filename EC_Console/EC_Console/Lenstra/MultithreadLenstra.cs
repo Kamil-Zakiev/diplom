@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EC_Console
@@ -33,9 +34,9 @@ namespace EC_Console
         /// <param name="threadsCount">Количество потоков</param>
         public static IEnumerable<LenstraResultOfEllepticCurve> LenstraMultiThreadResults(BigInteger n, int threadsCount)
         {
-            if(n == BigInteger.One)
+            if (n == BigInteger.One)
                 throw new Exception("LenstraMultiThreadResults: n == BigInteger.One");
-            if(threadsCount < 1)
+            if (threadsCount < 1)
                 throw new Exception("Количество потоков не может быть < 1");
 
             var tasks = new Task<LenstraResultOfEllepticCurve>[threadsCount];
@@ -45,6 +46,36 @@ namespace EC_Console
 
             var result = tasks.Select(task => task.Result);
             return result;
-        } 
+        }
+
+        public static BigInteger? LenstraMultiThreadFastResult(BigInteger n, int threadsCount)
+        {
+            //логических процессоров - 8
+            int cycles = (threadsCount - 1) / Environment.ProcessorCount + 1;
+            var tasks = new Task<LenstraResultOfEllepticCurve>[Environment.ProcessorCount];
+            LenstraResultOfEllepticCurve result = null;
+            for (int k = 0; k < cycles; k++)
+            {
+                using (var cts = new CancellationTokenWithDisposedState())
+                {
+                    for (int i = 0; i < tasks.Length; i++)
+                        tasks[i] =
+                            Task.Factory.StartNew(() => Lenstra.GetDividerWithCancel(n, _random, cts.Token),
+                                cts.Token);
+
+                    Task.WaitAny(tasks);
+                    if (tasks.Any(x => x.Status == TaskStatus.RanToCompletion && x.Result.Success))
+                    {
+                        result =
+                            tasks.First(x => x.Status == TaskStatus.RanToCompletion && x.Result.Success).Result;
+                    }
+                    cts.Cancel();
+                    if (result != null) return result.Divider;
+                }
+            }
+            return null;
+        }
+
+
     }
 }

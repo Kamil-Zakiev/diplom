@@ -42,9 +42,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lenstra\CancellationTokenWithDisposedState.cs" />
     <Compile Include="Lenstra\LenstraResultOfEllepticCurve.cs" />
     <Compile Include="Lenstra\MultithreadLenstra.cs" />
     <Compile Include="Resource\TwoPrimesMultipleGenerator.cs" />
+    <Compile Include="Test.cs" />
     <Compile Include="Utils\BigIntegerExtensions.cs" />
     <Compile Include="EllepticCurve\EllepticCurve.cs" />
     <Compile Include="Lenstra\Lenstra.cs" />

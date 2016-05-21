@@ -19,7 +19,7 @@ namespace EC_Console
 
         static void Main(string[] args)
         {
-            #region Опыты
+            #region Практическая часть диплома. Опыты
             /*
             //генерирование
             for (int i = 10; i <= 10; i = i + 5)
@@ -69,45 +69,10 @@ namespace EC_Console
 
             #endregion
 
-            #region Разложение
-            //BigInteger n = BigInteger.Parse("12345678901234567890");
-            //var pRs = BigIntegerExtensions.Factorize(n).OrderBy(x => x.Key);
-            //var nRecover = BigInteger.One;
-            //foreach (var pR in pRs)
-            //{
-            //    nRecover *= BigInteger.Pow(pR.Key, pR.Value);
-            //}
-            //var eq = n == nRecover; 
-            #endregion
 
-            #region Символ Лежандра
-            /*
-            int a = 27;
-            int p = 23;
-            Console.WriteLine("a = " + a);
-            Console.WriteLine("p = " + p);
-            Console.WriteLine("(a/p) = {0}", BigIntegerExtensions.Jacobi(a, p));
-            */
-
-            #endregion
-
-            //var pointsCount = 1008;
-            ////разложение числа pointsCount
-            //var pRs = BigIntegerExtensions.Factorize(pointsCount).OrderBy(x => x.Key);
-            //var b21 = pRs.Take(pRs.Count() - 1).Max(x => BigInteger.Pow(x.Key, x.Value));
-            //var lastPR = pRs.Skip(pRs.Count() - 1).First();
-            //var b2 = b21;
-            //if (lastPR.Value == 1 && lastPR.Key > b21)
-            //    b2 = lastPR.Key;
-
-            //var _lenstraEdges = new LenstraEdges()
-            //{
-            //    B1 = b21,
-            //    B2 = b2
-            //};
-
+            #region Теоретическая часть диплома. Оценка классов в зависимости от размерности делителя
             List<EllepticCurve> listOfEC = new List<EllepticCurve>();
-            int curvesCountPerDim = 100;
+            const int curvesCountPerDim = 4;
             var random = new Random();
             for (int pDim = 3; pDim < 15; pDim++)
             {
@@ -115,18 +80,18 @@ namespace EC_Console
                 for (int i = 0; i < curvesCountPerDim; i++)
                 {
                     dim = BigIntegerExtensions.NextPrimaryMillerRabin(dim);
-                    var a = BigIntegerExtensions.GetNextRandom(random, dim, 10);
-                    var b = BigIntegerExtensions.GetNextRandom(random, dim, 10);
+                    var a = BigIntegerExtensions.GetNextRandom(random, dim);
+                    var b = BigIntegerExtensions.GetNextRandom(random, dim);
                     var ec = new EllepticCurve(a, b, dim);
                     listOfEC.Add(ec);
                 }
             }
 
-            var result = listOfEC.GroupBy(x => x.p.ToString().Length,
+            listOfEC.GroupBy(x => x.p.ToString().Length,
                 (dim, ecSubEnum) =>
                 {
                     var ecSubList = ecSubEnum.ToList();
-                    return new DimensionResults()
+                    var r = new DimensionResults()
                     {
                         Dimension = dim,
                         FirstClass = ecSubList.Where(ec =>
@@ -150,11 +115,10 @@ namespace EC_Console
                             return b1 > Math.Pow((double)ec.p, 0.5);
                         }).ToList()
                     };
+                    File.AppendAllText("Ishm.txt", r.Dimension + " " + r.FirstClass.Count + " " + r.SecondClass.Count + " " + r.ThirdClass.Count + " " + r.ForthClass.Count + "\t\r\n");
+                    return r;
                 }).ToList();
-
-            File.WriteAllLines("Ishm.txt", result.Select(x => x.Dimension + " " + x.FirstClass.Count + " " + x.SecondClass.Count + " " + x.ThirdClass.Count + " " + x.ForthClass.Count));
-
-            Console.ReadKey();
+            #endregion
         }
     }
 }

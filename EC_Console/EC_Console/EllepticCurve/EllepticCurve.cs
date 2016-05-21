@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Numerics;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 
 namespace EC_Console
 {
@@ -182,28 +183,44 @@ namespace EC_Console
             {
                 if (_pointsCount != BigInteger.Zero)
                     return _pointsCount;
-                if (!BigIntegerExtensions.IsPrimaryMillerRabin(this.p))
-                    throw new Exception("НЕ ИСПОЛЬЗОВАТЬ");
 
-                long count = 0;
                 var pLong = (long)p;
-                for (long x = 0; x < p; x++)
+                var tasks = new Task<int>[Environment.ProcessorCount];
+                var step = pLong / (Environment.ProcessorCount-1);
+                for (int i = 0; i < tasks.Length; i++)
                 {
-                    var z = (long)BigIntegerExtensions.Mod(x * x * x + a * x + b, p);
-                    if (z == 0)
-                        count++;
-                    else
-                    {
-                        var legendreSymbol = BigIntegerExtensions.jacobi(z, pLong);
-                        if (legendreSymbol == 1)
-                            count += 2;
-                    }
+                    long start = i * step;
+                    long end = start + step;
+                    tasks[i] = Task.Factory.StartNew(() => countPointInner(start, end));
                 }
-                count++; //учитываем бесконечно удаленную точку
-                _pointsCount = count;
-                return _pointsCount;
+                Task.WaitAll(tasks);
 
+                _pointsCount = tasks.Sum(x => x.Result) + 1;
+                return _pointsCount;
             }
+        }
+
+        private int countPointInner(long start, long end)
+        {
+            var count = 0;
+            var pLong = (long)p;
+
+            if (end >= pLong)
+                end = pLong;
+            for (long x = start; x < end; x++)
+            {
+                var z = (long)BigIntegerExtensions.Mod(x * x * x + a * x + b, p);
+                if (z == 0)
+                    count++;
+                else
+                {
+                    var legendreSymbol = BigIntegerExtensions.jacobi(z, pLong);
+                    if (legendreSymbol == 1)
+                        count += 2;
+                }
+            }
+
+            return count;
         }
 
         public PointOfEC LenstraStartingPoint { get; set; }

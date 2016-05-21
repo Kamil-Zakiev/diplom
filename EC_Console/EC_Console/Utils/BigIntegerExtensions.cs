@@ -78,7 +78,7 @@ namespace EC_Console
         /// <param name="random"> Объект - генератор случайных чисел </param>
         public static BigInteger GetNextRandom(Random random, BigInteger n, int time = 1000)
         {
-            Thread.Sleep(time);
+            //Thread.Sleep(time);
             var bytesN = n.ToByteArray();
             var bytesa = new byte[bytesN.Length];
             random.NextBytes(bytesa);
@@ -193,7 +193,12 @@ namespace EC_Console
             return s * Jacobi(n1, a1);
         }
 
-        /* Precondition: a, n >= 0; n is odd */
+        /// <summary>
+        /// Precondition: a, n >= 0; n is odd
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="n"></param>
+        /// <returns></returns>
         public static long jacobi(long a, long n)
         {
             long ans = 0;
@@ -268,11 +273,10 @@ namespace EC_Console
                 _pR.Add(n, 1);
                 return;
             }
-            //TODO: call Lenstra Algorythm with cancellation token realization
-            var result = MultithreadLenstra.LenstraMultiThreadResults(n, 16).FirstOrDefault(x => x.Success);
+            var result = MultithreadLenstra.LenstraMultiThreadFastResult(n, 160);
             if (result != null)
             {
-                var divider = result.Divider;
+                var divider = result.Value;
                 if (IsPrimaryMillerRabin(divider))
                 {
                     _pR.Add(divider, 1);

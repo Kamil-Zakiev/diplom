@@ -29,7 +29,7 @@ namespace EC_Console
             } while (g == n);
 
             //убираем влияние выбора рандомного числа на время работы алгоритма
-            startTime = startTime + new TimeSpan(0, 0, 0, k*3);
+            //startTime = startTime + new TimeSpan(0, 0, 0, k*3);
 
             EllepticCurve ec = null;
             try
@@ -80,6 +80,91 @@ namespace EC_Console
                 WastedTime = DateTime.Now - startTime
             };
         }
+
+
+        /// <summary>  
+        /// Возвращает объект LenstraResultOfEllepticCurve, 
+        /// если находится какое-то число, то все осатльные потоки прекращаются 
+        /// </summary>
+        /// <param name="n">Число, у которого требуется найти делитель</param>
+        /// <param name="token">Токен отмены</param>
+        public LenstraResultOfEllepticCurve GetDividerWithCancel(BigInteger n, Random random, CancellationToken token)
+        {
+            var startTime = DateTime.Now;
+            BigInteger g, x, y, a, b;
+            int k = 0;
+            int time = 10;
+            do
+            {
+                x = BigIntegerExtensions.GetNextRandom(random, n, time);
+                y = BigIntegerExtensions.GetNextRandom(random, n, time);
+                a = BigIntegerExtensions.GetNextRandom(random, n, time);
+                k++;
+
+                b = BigIntegerExtensions.Mod(y * y - x * x * x - a * x, n);
+                g = BigInteger.GreatestCommonDivisor(n, 4 * a * a * a + 27 * b * b);
+            } while (g == n);
+
+            //убираем влияние выбора рандомного числа на время работы алгоритма
+            //startTime = startTime + new TimeSpan(0, 0, 0, k*3);
+
+            EllepticCurve ec = null;
+            try
+            {
+                if (g != 1)
+                    throw new GCDFoundException(g);
+                ec = new EllepticCurve(a, b, n);
+                var p0 = new PointOfEC
+                {
+                    EllepticCurve = ec,
+                    X = x,
+                    Y = y
+                };
+                ec.LenstraStartingPoint = p0;
+
+                var P = new PointOfEC(p0);
+
+                BigInteger p = 2;
+                while (p < B1 && !token.IsCancellationRequested)
+                {
+                    var pr = p;
+                    while (pr < B1)
+                    {
+                        P = ec.Mult(p, P);
+                        pr *= p;
+                    }
+                    p = BigIntegerExtensions.NextPrimaryMillerRabin(p);
+                }
+            }
+            catch (GCDFoundException exc)
+            {
+                Console.WriteLine("Поток {0} молодец: {1} = {2} * {3}", 
+                    Task.CurrentId, n, exc.GreatestCommonDivisor, n / exc.GreatestCommonDivisor);
+
+                return new LenstraResultOfEllepticCurve
+                {
+                    EllepticCurve = ec,
+                    TargetNumber = n,
+                    Divider = exc.GreatestCommonDivisor,
+                    WastedTime = DateTime.Now - startTime
+                };
+            }
+
+            if (token.IsCancellationRequested)
+                Console.WriteLine("Поток {0} остановлен", Task.CurrentId);
+            else
+                Console.WriteLine("Поток {0} не смог", Task.CurrentId);
+
+ 
+            return new LenstraResultOfEllepticCurve
+            {
+                EllepticCurve = ec,
+                TargetNumber = n,
+                WastedTime = DateTime.Now - startTime
+            };
+        }
+
+
     }
 
     public class LenstraEdges
