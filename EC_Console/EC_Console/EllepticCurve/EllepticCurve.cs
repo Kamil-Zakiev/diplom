@@ -247,16 +247,11 @@ namespace EC_Console
                     };
                     return _lenstraEdges;
                 }
-                var b1 = pRs.Take(pRs.Count() - 1).Max(x => BigInteger.Pow(x.Key, x.Value));
-                var lastPR = pRs.Skip(pRs.Count() - 1).First();
-                BigInteger b2 = 1;
-                if (lastPR.Value == 1 && lastPR.Key > b1)
-                    b2 = lastPR.Key;
-
+                var b1 = pRs.Max(x => BigInteger.Pow(x.Key, x.Value));
                 _lenstraEdges = new LenstraEdges()
                 {
                     B1 = b1,
-                    B2 = b2
+                    B2 = 1
                 };
                 return _lenstraEdges;
             }
