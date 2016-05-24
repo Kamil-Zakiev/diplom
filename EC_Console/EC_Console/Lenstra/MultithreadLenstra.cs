@@ -29,6 +29,21 @@ namespace EC_Console
             return list;
         }
 
+        /// <summary>  </summary>
+        /// <param name="pathTwoPrimesMultiple">Имя файла с числами для факторизации</param>
+        /// <param name="threadsCount">Колчиство потоков</param>
+        public static List<MinTimeResult> GetMinTimes(string pathTwoPrimesMultiple, int threadsCount)
+        {
+            var twoPrimeMultiplesStrings = File.ReadAllLines(pathTwoPrimesMultiple);
+            var list = new List<MinTimeResult>();
+            foreach (var n in twoPrimeMultiplesStrings.Select(BigInteger.Parse).Take(10))
+            {
+                list.Add(GetLenstraMultiThreadFastResultSeconds(n, threadsCount));
+            }
+
+            return list;
+        }
+
         /// <summary> Факторизация методом Ленстры </summary>
         /// <param name="n">Число, которое необходимо факторизовать</param>
         /// <param name="threadsCount">Количество потоков</param>
@@ -74,6 +89,23 @@ namespace EC_Console
                 }
             }
             return null;
+        }
+
+        /// <summary> Время(сек.) нахождения делителя </summary>
+        public static MinTimeResult GetLenstraMultiThreadFastResultSeconds(BigInteger n, int threadsCount)
+        {
+            var start = DateTime.Now;
+            var divider = LenstraMultiThreadFastResult(n, threadsCount);
+            var result = new MinTimeResult();
+            if (divider.HasValue)
+            {
+                result.DividerDimension = divider.Value.ToString().Length;
+                result.Time = (DateTime.Now - start).TotalSeconds;
+                return result;
+            }
+            result.TargetDimension = n.ToString().Length;
+            result.Time = null;
+            return result;
         }
 
 
