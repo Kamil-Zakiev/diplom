@@ -1,2 +1,7 @@
 EC_Console/.idea/*
 EC_Console/EC_Console.sln.DotSettings.user
+EC_Console/EC_Console/bin/*
+bin/*
+EC_Console/EC_Console/bin/Debug/EC_Console.exe
+EC_Console/EC_Console/obj/*
+*.exe

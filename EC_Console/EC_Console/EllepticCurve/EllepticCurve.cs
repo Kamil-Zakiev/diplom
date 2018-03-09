@@ -244,6 +244,7 @@ namespace EC_Console
                         B1 = BigInteger.Pow(pRs.First().Key, pRs.First().Value),
                         B2 = 1
                     };
+                    
                     return _lenstraEdges;
                 }
                 var b1 = pRs.Max(x => BigInteger.Pow(x.Key, x.Value));
