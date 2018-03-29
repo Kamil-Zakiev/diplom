@@ -14,10 +14,10 @@ namespace EC_Console
         public PointOfEC Basis;
 
         /// <summary> a принадлежит множеству F_q</summary>
-        private BigInteger a;
+        public BigInteger a;
 
         /// <summary> b принадлежит множеству F_q</summary>
-        private BigInteger b;
+        public BigInteger b;
 
         /// <summary> 
         /// Характеристика конечного поля F_q 

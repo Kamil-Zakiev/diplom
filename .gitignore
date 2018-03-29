@@ -5,3 +5,5 @@ bin/*
 EC_Console/EC_Console/bin/Debug/EC_Console.exe
 EC_Console/EC_Console/obj/*
 *.exe
+bin/
+obj/

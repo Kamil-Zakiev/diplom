@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
@@ -259,7 +260,17 @@ namespace EC_Console
                 return _pR;
             }
 
-            FactorizeInner(n);
+            try
+            {
+                FactorizeInner(n);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Проблема при факторизации числа ");
+                Console.WriteLine(n);
+                Console.WriteLine(e);
+                throw;
+            }
             return _pR;
         }
 
