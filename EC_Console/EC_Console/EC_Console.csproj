@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>EC_Console</RootNamespace>
     <AssemblyName>EC_Console</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -42,12 +42,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BigIntegerExtensions.cs" />
     <Compile Include="Lenstra\CancellationTokenWithDisposedState.cs" />
     <Compile Include="Lenstra\LenstraResultOfEllepticCurve.cs" />
     <Compile Include="Lenstra\MultithreadLenstra.cs" />
     <Compile Include="Resource\TwoPrimesMultipleGenerator.cs" />
     <Compile Include="Test.cs" />
-    <Compile Include="Utils\BigIntegerExtensions.cs" />
     <Compile Include="EllepticCurve\EllepticCurve.cs" />
     <Compile Include="Lenstra\Lenstra.cs" />
     <Compile Include="EllepticCurve\PointOfEC.cs" />
@@ -62,6 +62,12 @@
     <Content Include="Resource\TwoPrimesMultiple.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Utils\Utils.csproj">
+      <Project>{7c44ec61-eb15-423b-b98f-a5b65178c42b}</Project>
+      <Name>Utils</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

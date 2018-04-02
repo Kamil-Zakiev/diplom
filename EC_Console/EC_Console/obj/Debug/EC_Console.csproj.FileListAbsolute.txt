@@ -11,3 +11,13 @@ C:\Stash\diplom\EC_Console\EC_Console\bin\Debug\EC_Console.exe
 C:\Stash\diplom\EC_Console\EC_Console\bin\Debug\EC_Console.pdb
 C:\Stash\diplom\EC_Console\EC_Console\bin\Debug\Resource\TwoPrimesMultiple.txt
 C:\Stash\diplom\EC_Console\EC_Console\obj\Debug\EC_Console.csprojResolveAssemblyReference.cache
+E:\Stash\diplom\EC_Console\EC_Console\obj\Debug\EC_Console.csprojResolveAssemblyReference.cache
+E:\Stash\diplom\EC_Console\EC_Console\obj\Debug\EC_Console.csproj.CoreCompileInputs.cache
+E:\Stash\diplom\EC_Console\EC_Console\obj\Debug\EC_Console.exe
+E:\Stash\diplom\EC_Console\EC_Console\obj\Debug\EC_Console.pdb
+E:\Stash\diplom\EC_Console\EC_Console\bin\Debug\Resource\TwoPrimesMultiple.txt
+E:\Stash\diplom\EC_Console\EC_Console\bin\Debug\EC_Console.exe.config
+E:\Stash\diplom\EC_Console\EC_Console\bin\Debug\EC_Console.exe
+E:\Stash\diplom\EC_Console\EC_Console\bin\Debug\EC_Console.pdb
+E:\Stash\diplom\EC_Console\EC_Console\bin\Debug\Utils.dll
+E:\Stash\diplom\EC_Console\EC_Console\bin\Debug\Utils.pdb

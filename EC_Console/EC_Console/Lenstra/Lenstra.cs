@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
+using ExtraUtils;
+using Utils;
 
 namespace EC_Console
 {
@@ -24,7 +26,7 @@ namespace EC_Console
                 a = BigIntegerExtensions.GetNextRandom(random, n);
                 k++;
 
-                b = BigIntegerExtensions.Mod(y * y - x * x * x - a * x, n);
+                b = ExtraBigIntegerExtensions.Mod(y * y - x * x * x - a * x, n);
                 g = BigInteger.GreatestCommonDivisor(n, 4 * a * a * a + 27 * b * b);
             } while (g == n);
 
@@ -101,7 +103,7 @@ namespace EC_Console
                 a = BigIntegerExtensions.GetNextRandom(random, n, time);
                 k++;
 
-                b = BigIntegerExtensions.Mod(y * y - x * x * x - a * x, n);
+                b = ExtraBigIntegerExtensions.Mod(y * y - x * x * x - a * x, n);
                 g = BigInteger.GreatestCommonDivisor(n, 4 * a * a * a + 27 * b * b);
             } while (g == n);
 

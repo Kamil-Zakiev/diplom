@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using ExtraUtils;
+using Utils;
 
 namespace EC_Console
 {
@@ -61,11 +63,11 @@ namespace EC_Console
         public void CreateBasis()
         {
             BigInteger x = 0;
-            var y = Math.Sqrt((double)BigIntegerExtensions.Mod(x * x * x + a * x + b, p));
+            var y = Math.Sqrt((double)ExtraBigIntegerExtensions.Mod(x * x * x + a * x + b, p));
             while (x < p && ((long)(y * tenExp) % tenExp != 0))
             {
                 x++;
-                y = Math.Sqrt((double)BigIntegerExtensions.Mod(x * x * x + a * x + b, p));
+                y = Math.Sqrt((double)ExtraBigIntegerExtensions.Mod(x * x * x + a * x + b, p));
             }
             Basis = CreatePoint(x, (BigInteger)y);
         }
@@ -76,7 +78,7 @@ namespace EC_Console
         /// <returns></returns>
         public bool ContainsPoint(BigInteger X, BigInteger Y)
         {
-            return BigIntegerExtensions.Mod(Y * Y, p) == BigIntegerExtensions.Mod(X * X * X + a * X + b, p);
+            return ExtraBigIntegerExtensions.Mod(Y * Y, p) == ExtraBigIntegerExtensions.Mod(X * X * X + a * X + b, p);
         }
 
         public PointOfEC CreatePoint(BigInteger X, BigInteger Y)
@@ -124,9 +126,9 @@ namespace EC_Console
 
             BigInteger lambda;
             if (!point1.Equals(point2))
-                lambda = BigInteger.Multiply(point2.Y - point1.Y, BigIntegerExtensions.Inverse(point2.X - point1.X, p));
+                lambda = BigInteger.Multiply(point2.Y - point1.Y, ExtraBigIntegerExtensions.Inverse(point2.X - point1.X, p));
             else
-                lambda = (3 * point1.X * point1.X + a) * BigIntegerExtensions.Inverse(2 * point2.Y, p);
+                lambda = (3 * point1.X * point1.X + a) * ExtraBigIntegerExtensions.Inverse(2 * point2.Y, p);
             lambda = lambda % p;
 
             var x = lambda * lambda - point1.X - point2.X;
@@ -208,7 +210,7 @@ namespace EC_Console
                 end = pLong;
             for (long x = start; x < end; x++)
             {
-                var z = (long)BigIntegerExtensions.Mod(x * x * x + a * x + b, p);
+                var z = (long)ExtraBigIntegerExtensions.Mod(x * x * x + a * x + b, p);
                 if (z == 0)
                     count++;
                 else
