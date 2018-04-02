@@ -36,5 +36,13 @@ namespace EdwardsCurves
         {
             return $"(x = {ParameterX}, y = {ParameterY}, z = {ParameterZ})";
         }
+
+        public override bool Equals(object obj)
+        {
+            var otherPoint = (ProjectiveEdwardsCurvePoint) obj;
+            
+            // потому что этот метод нужен лишь для тестов. Производительность не важна
+            return this.ToEdwardsCurvePoint().ToString() == otherPoint.ToEdwardsCurvePoint().ToString();
+        }
     }
 }

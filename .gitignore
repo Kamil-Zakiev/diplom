@@ -7,3 +7,4 @@ EC_Console/EC_Console/obj/*
 *.exe
 bin/
 obj/
+packages/

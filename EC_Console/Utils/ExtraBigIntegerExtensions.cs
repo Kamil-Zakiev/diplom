@@ -8,7 +8,15 @@ namespace ExtraUtils
         {
             if (a.Sign >= 0)
                 return a % p;
-            return a % p + p;
+
+            var modP = a % p;
+
+            if (modP < 0)
+            {
+                return modP + p;
+            }
+            
+            return modP;
         }
         
         /// <summary> Найти обратный элемент к "а" в поле размерности "p" </summary>
