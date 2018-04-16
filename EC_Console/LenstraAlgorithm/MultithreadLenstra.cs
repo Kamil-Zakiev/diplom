@@ -5,19 +5,25 @@ using System.Linq;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
+using LenstraAlgorithm;
 
 namespace EC_Console
 {
     public class MultithreadLenstra
     {
-        private static Lenstra Lenstra = new Lenstra();
-        private static Random _random = new Random();
+        public MultithreadLenstra(ILenstra lenstra)
+        {
+            Lenstra = lenstra;
+        }
+        
+        private ILenstra Lenstra;
+        private Random _random = new Random();
 
         /// <summary> Применяет пул ЭК к числам для факторизации </summary>
         /// <param name="pathTwoPrimesMultiple">Имя файла с числами для факторизации</param>
         /// <param name="threadsCount">Колчиство потоков</param>
         /// <returns>Список результатов со всех ЭК</returns>
-        public static List<LenstraResultOfEllepticCurve> UseThreadsParallelism(string pathTwoPrimesMultiple, int threadsCount)
+        public List<LenstraResultOfEllepticCurve> UseThreadsParallelism(string pathTwoPrimesMultiple, int threadsCount)
         {
             var twoPrimeMultiplesStrings = File.ReadAllLines(pathTwoPrimesMultiple);
             var list = new List<LenstraResultOfEllepticCurve>();
@@ -32,7 +38,7 @@ namespace EC_Console
         /// <summary>  </summary>
         /// <param name="pathTwoPrimesMultiple">Имя файла с числами для факторизации</param>
         /// <param name="threadsCount">Колчиство потоков</param>
-        public static List<MinTimeResult> GetMinTimes(string pathTwoPrimesMultiple, int threadsCount)
+        public List<MinTimeResult> GetMinTimes(string pathTwoPrimesMultiple, int threadsCount)
         {
             var twoPrimeMultiplesStrings = File.ReadAllLines(pathTwoPrimesMultiple);
             var list = new List<MinTimeResult>();
@@ -47,7 +53,7 @@ namespace EC_Console
         /// <summary> Факторизация методом Ленстры </summary>
         /// <param name="n">Число, которое необходимо факторизовать</param>
         /// <param name="threadsCount">Количество потоков</param>
-        public static IEnumerable<LenstraResultOfEllepticCurve> LenstraMultiThreadResults(BigInteger n, int threadsCount)
+        public IEnumerable<LenstraResultOfEllepticCurve> LenstraMultiThreadResults(BigInteger n, int threadsCount)
         {
             if (n == BigInteger.One)
                 throw new Exception("LenstraMultiThreadResults: n == BigInteger.One");
@@ -63,7 +69,7 @@ namespace EC_Console
             return result;
         }
 
-        public static BigInteger? LenstraMultiThreadFastResult(BigInteger n, int threadsCount)
+        public BigInteger? LenstraMultiThreadFastResult(BigInteger n, int threadsCount)
         {
             //логических процессоров - 8
             int cycles = (threadsCount - 1) / Environment.ProcessorCount + 1;
@@ -92,7 +98,7 @@ namespace EC_Console
         }
 
         /// <summary> Время(сек.) нахождения делителя </summary>
-        public static MinTimeResult GetLenstraMultiThreadFastResultSeconds(BigInteger n, int threadsCount)
+        public MinTimeResult GetLenstraMultiThreadFastResultSeconds(BigInteger n, int threadsCount)
         {
             var start = DateTime.Now;
             var divider = LenstraMultiThreadFastResult(n, threadsCount);

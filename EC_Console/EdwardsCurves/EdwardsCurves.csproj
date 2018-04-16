@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EdwardsCurvePoint.cs" />
+    <Compile Include="Lenstra\EdwardsLenstra.cs" />
     <Compile Include="PointsFactory.cs" />
     <Compile Include="ProjectiveEdwardsCurve.cs" />
     <Compile Include="ProjectiveEdwardsCurvePoint.cs" />
@@ -51,6 +52,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\LenstraAlgorithm\LenstraAlgorithm.csproj">
+      <Project>{18cf89f3-a1b0-44cc-ae40-500d33946921}</Project>
+      <Name>LenstraAlgorithm</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Utils\Utils.csproj">
       <Project>{7c44ec61-eb15-423b-b98f-a5b65178c42b}</Project>
       <Name>Utils</Name>

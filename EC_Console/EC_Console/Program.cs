@@ -8,13 +8,6 @@ using Utils;
 
 namespace EC_Console
 {
-    public class MinTimeResult
-    {
-        public int TargetDimension;
-        public int DividerDimension;
-        public double? Time;
-    }
-
     public class Program
     {
         public const string CurvesWithItsBAndPointsCountTxt = "curves with its B and points count.txt";

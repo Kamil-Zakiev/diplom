@@ -43,9 +43,21 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\EC_Console\EC_Console.csproj">
+      <Project>{9e9c47ea-d709-4f36-86e1-b9e2b1776dc9}</Project>
+      <Name>EC_Console</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EdwardsCurves\EdwardsCurves.csproj">
       <Project>{b1d96fa9-0a82-463a-b298-340155967a50}</Project>
       <Name>EdwardsCurves</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\LenstraAlgorithm\LenstraAlgorithm.csproj">
+      <Project>{18cf89f3-a1b0-44cc-ae40-500d33946921}</Project>
+      <Name>LenstraAlgorithm</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utils\Utils.csproj">
+      <Project>{7c44ec61-eb15-423b-b98f-a5b65178c42b}</Project>
+      <Name>Utils</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

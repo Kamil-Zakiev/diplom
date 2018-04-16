@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using ExtraUtils;
 using EC_Console;
+using LenstraAlgorithm;
 
 namespace Utils
 {
@@ -15,9 +16,8 @@ namespace Utils
         /// Возвращает случайное число меньшее 'n'
         /// </summary>
         /// <param name="random"> Объект - генератор случайных чисел </param>
-        public static BigInteger GetNextRandom(Random random, BigInteger n, int time = 1000)
+        public static BigInteger GetNextRandom(Random random, BigInteger n)
         {
-            //Thread.Sleep(time);
             var bytesN = n.ToByteArray();
             var bytesa = new byte[bytesN.Length];
             random.NextBytes(bytesa);
@@ -168,7 +168,7 @@ namespace Utils
         }
 
 
-        public static Dictionary<BigInteger, int> Factorize(BigInteger n)
+        public static Dictionary<BigInteger, int> Factorize<TLenstra>(BigInteger n) where  TLenstra: ILenstra, new ()
         {
             _pR = new Dictionary<BigInteger, int>();
             if (IsPrimaryMillerRabin(n))
@@ -200,7 +200,8 @@ namespace Utils
 
             try
             {
-                FactorizeInner(n);
+                var multithreadLenstra = new MultithreadLenstra(new TLenstra());
+                FactorizeInner(n, multithreadLenstra);
             }
             catch (Exception e)
             {
@@ -213,7 +214,7 @@ namespace Utils
         }
 
         private static Dictionary<BigInteger, int> _pR;
-        private static void FactorizeInner(BigInteger n)
+        private static void FactorizeInner(BigInteger n, MultithreadLenstra multithreadLenstra)
         {
             if (n == BigInteger.One)
                 return;
@@ -222,7 +223,8 @@ namespace Utils
                 _pR.Add(n, 1);
                 return;
             }
-            var result = MultithreadLenstra.LenstraMultiThreadFastResult(n, 160);
+
+            var result = multithreadLenstra.LenstraMultiThreadFastResult(n, 160);
             if (result != null)
             {
                 var divider = result.Value;
@@ -235,12 +237,12 @@ namespace Utils
                         _pR[divider]++;
                         n /= divider;
                     }
-                    FactorizeInner(n);
+                    FactorizeInner(n, multithreadLenstra);
                 }
                 else
                 {
-                    FactorizeInner(n / divider);
-                    FactorizeInner(divider);
+                    FactorizeInner(n / divider, multithreadLenstra);
+                    FactorizeInner(divider, multithreadLenstra);
                 }
             }
         }

@@ -1,8 +1,9 @@
 ﻿using System.Numerics;
+using LenstraAlgorithm;
 
 namespace EdwardsCurves
 {
-    public class ProjectiveEdwardsCurve
+    public class ProjectiveEdwardsCurve : IEllepticCurve
     {
         public ProjectiveEdwardsCurve(BigInteger parameterD, BigInteger fieldOrder)
         {

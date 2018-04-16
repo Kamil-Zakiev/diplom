@@ -3,6 +3,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using ExtraUtils;
+using LenstraAlgorithm;
 using Utils;
 
 namespace EC_Console
@@ -10,7 +11,7 @@ namespace EC_Console
     /// <summary> 
     ///Эллиптическая кривая y^2 = x^3 + a * x + b над полем F_q, при характеристике поля p>=3 
     ///</summary>
-    public class EllepticCurve
+    public class EllepticCurve: IEllepticCurve
     {
         /// <summary> Генератор </summary>
         public PointOfEC Basis;
@@ -238,7 +239,7 @@ namespace EC_Console
 
                 var pointsCount = this.CountPoints;
                 //разложение числа pointsCount
-                var pRs = BigIntegerExtensions.Factorize(pointsCount).OrderBy(x => x.Key);
+                var pRs = BigIntegerExtensions.Factorize<ClassicLenstra>(pointsCount).OrderBy(x => x.Key);
                 if (pRs.Count() == 1)
                 {
                     _lenstraEdges = new LenstraEdges()

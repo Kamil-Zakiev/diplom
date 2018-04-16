@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 
-namespace EC_Console
+namespace LenstraAlgorithm
 {
     /// <summary> Резльтаты эллиптической кривой при попытке факторизации числа </summary>
     public class LenstraResultOfEllepticCurve
@@ -13,7 +13,7 @@ namespace EC_Console
         public int TargetNumberDigitsCount { get { return TargetNumber.ToString().Length; } }
 
         /// <summary> Эллиптическая кривая </summary>
-        public EllepticCurve EllepticCurve;
+        public IEllepticCurve EllepticCurve;
 
         /// <summary> Потрачено времени </summary>
         public TimeSpan WastedTime;

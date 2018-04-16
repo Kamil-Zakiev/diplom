@@ -14,7 +14,7 @@ namespace EC_Console
         public static void Factorize()
         {
             BigInteger n = BigInteger.Parse("123456794568413263") * BigInteger.Parse("256783548123456833");
-            var pRs = BigIntegerExtensions.Factorize(n).OrderBy(x => x.Key);
+            var pRs = BigIntegerExtensions.Factorize<ClassicLenstra>(n).OrderBy(x => x.Key);
             var nRecover = BigInteger.One;
             foreach (var pR in pRs)
             {
@@ -42,7 +42,7 @@ namespace EC_Console
             var listOfRandoms = new List<BigInteger>();
             for (int i = 0; i < 1000000; i++)
             {
-                var bi = BigIntegerExtensions.GetNextRandom(random, n, 0);
+                var bi = BigIntegerExtensions.GetNextRandom(random, n);
                 listOfRandoms.Add(bi);
             }
             var count = listOfRandoms.Distinct().Count();

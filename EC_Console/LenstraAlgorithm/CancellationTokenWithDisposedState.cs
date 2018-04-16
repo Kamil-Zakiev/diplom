@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-namespace EC_Console
+namespace LenstraAlgorithm
 {
     /// <summary>
     /// Собственная реализация для проверки состояния удаленности 
