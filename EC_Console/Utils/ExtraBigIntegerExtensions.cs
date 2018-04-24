@@ -1,7 +1,7 @@
-﻿using System.Numerics;
-
-namespace ExtraUtils
+﻿namespace Utils
 {
+    using System.Numerics;
+
     public static class ExtraBigIntegerExtensions
     {
         public static BigInteger Mod(this BigInteger a, BigInteger p)

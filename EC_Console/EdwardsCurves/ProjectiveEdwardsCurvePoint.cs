@@ -1,9 +1,10 @@
 ﻿using System.Numerics;
-using ExtraUtils;
 using LenstraAlgorithm;
 
 namespace EdwardsCurves
 {
+    using Utils;
+
     public class ProjectiveEdwardsCurvePoint
     {
         public BigInteger ParameterX { get; }

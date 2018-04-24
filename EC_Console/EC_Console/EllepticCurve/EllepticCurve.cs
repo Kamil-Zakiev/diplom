@@ -2,12 +2,13 @@
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using ExtraUtils;
 using LenstraAlgorithm;
 using Utils;
 
 namespace EC_Console
 {
+    using LenstraAlgorithm.Dto;
+
     /// <summary> 
     ///Эллиптическая кривая y^2 = x^3 + a * x + b над полем F_q, при характеристике поля p>=3 
     ///</summary>

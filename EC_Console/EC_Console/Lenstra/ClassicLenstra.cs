@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
-using ExtraUtils;
 using LenstraAlgorithm;
 using Utils;
 
 namespace EC_Console
 {
+    using LenstraAlgorithm.Dto;
+
     public class ClassicLenstra : ILenstra
     {
         public BigInteger B1 = BigInteger.Parse("100000");

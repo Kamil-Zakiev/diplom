@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Numerics;
-using ExtraUtils;
 using Utils;
 
 namespace EdwardsCurves

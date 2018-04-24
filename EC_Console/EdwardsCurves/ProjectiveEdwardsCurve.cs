@@ -24,8 +24,5 @@ namespace EdwardsCurves
         public readonly ProjectiveEdwardsCurvePoint Infinity2;
         
         public readonly ProjectiveEdwardsCurvePoint NeitralPoint;
-        
-        
-
     }
 }

@@ -32,7 +32,7 @@ namespace EC_Console
                 TwoPrimesMultipleGenerator.GenerateTwoPrimesMultipleNumbersInFile(path, i / 2);
             }*/
 /*
-            var results = new List<MinTimeResult>();
+            var results = new List<FactorizeTimeResult>();
             foreach (var path in Directory.GetFiles("TwoPrimesMultiple"))
             {
                 results = MultithreadLenstra.GetMinTimes(path, threadsCount: 100);
@@ -44,7 +44,7 @@ namespace EC_Console
                             var averMin = res.Average(x => x.Time.Value);
                             var resultStr = dim + " " + averMin + "\t\r\n";
                             File.AppendAllText("ExperimentResultsMinTime.txt", resultStr);
-                            return new MinTimeResult()
+                            return new FactorizeTimeResult()
                             {
                                 DividerDimension = dim,
                                 Time = averMin

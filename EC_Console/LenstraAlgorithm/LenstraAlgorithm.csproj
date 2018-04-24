@@ -39,12 +39,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CancellationTokenWithDisposedState.cs" />
+    <Compile Include="Dto\FactorizeTimeResult.cs" />
+    <Compile Include="Dto\LenstraEdges.cs" />
+    <Compile Include="Dto\LenstraResultOfEllepticCurve.cs" />
     <Compile Include="IEllepticCurve.cs" />
     <Compile Include="ILenstra.cs" />
-    <Compile Include="LenstraEdges.cs" />
-    <Compile Include="LenstraResultOfEllepticCurve.cs" />
-    <Compile Include="MinTimeResult.cs" />
     <Compile Include="MultithreadLenstra.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

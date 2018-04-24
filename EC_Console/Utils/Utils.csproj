@@ -41,7 +41,7 @@
   <ItemGroup>
     <Compile Include="BigIntegerExtensions.cs" />
     <Compile Include="ExtraBigIntegerExtensions.cs" />
-    <Compile Include="GCDFoundException.cs" />
+    <Compile Include="GcdFoundException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

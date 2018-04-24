@@ -1,23 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Threading;
-using System.Threading.Tasks;
-using LenstraAlgorithm;
-
-namespace EC_Console
+﻿namespace LenstraAlgorithm
 {
-    public class MultithreadLenstra
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
+    using System.Numerics;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Dto;
+
+    /// <summary> Сервис, предоставляющий функционал, который использует метод Ленстры в многопоточном режиме </summary>
+    public class MultithreadLenstra<TLenstra> where TLenstra : ILenstra, new()
     {
-        public MultithreadLenstra(ILenstra lenstra)
-        {
-            Lenstra = lenstra;
-        }
+        private readonly ILenstra _lenstra;
         
-        private ILenstra Lenstra;
-        private Random _random = new Random();
+        private readonly Random _random = new Random();
+
+        public MultithreadLenstra()
+        {
+            _lenstra = new TLenstra();
+        }
 
         /// <summary> Применяет пул ЭК к числам для факторизации </summary>
         /// <param name="pathTwoPrimesMultiple">Имя файла с числами для факторизации</param>
@@ -37,11 +40,11 @@ namespace EC_Console
 
         /// <summary>  </summary>
         /// <param name="pathTwoPrimesMultiple">Имя файла с числами для факторизации</param>
-        /// <param name="threadsCount">Колчиство потоков</param>
-        public List<MinTimeResult> GetMinTimes(string pathTwoPrimesMultiple, int threadsCount)
+        /// <param name="threadsCount">Количество потоков</param>
+        public List<FactorizeTimeResult> GetMinTimes(string pathTwoPrimesMultiple, int threadsCount)
         {
             var twoPrimeMultiplesStrings = File.ReadAllLines(pathTwoPrimesMultiple);
-            var list = new List<MinTimeResult>();
+            var list = new List<FactorizeTimeResult>();
             foreach (var n in twoPrimeMultiplesStrings.Select(BigInteger.Parse).Take(10))
             {
                 list.Add(GetLenstraMultiThreadFastResultSeconds(n, threadsCount));
@@ -50,69 +53,107 @@ namespace EC_Console
             return list;
         }
 
-        /// <summary> Факторизация методом Ленстры </summary>
+        /// <summary> Факторизация методом Ленстры. Каждая кривая пытается факторизовать число вне зависимости от остальных кривых. </summary>
         /// <param name="n">Число, которое необходимо факторизовать</param>
-        /// <param name="threadsCount">Количество потоков</param>
-        public IEnumerable<LenstraResultOfEllepticCurve> LenstraMultiThreadResults(BigInteger n, int threadsCount)
+        /// <param name="threadsCount">Количество потоков == количество ЭК</param>
+        public IReadOnlyList<LenstraResultOfEllepticCurve> LenstraMultiThreadResults(BigInteger n, int threadsCount)
         {
             if (n == BigInteger.One)
+            {
                 throw new Exception("LenstraMultiThreadResults: n == BigInteger.One");
+            }
+
             if (threadsCount < 1)
+            {
                 throw new Exception("Количество потоков не может быть < 1");
+            }
 
-            var tasks = new Task<LenstraResultOfEllepticCurve>[threadsCount];
-            for (int i = 0; i < tasks.Length; i++)
-                tasks[i] = Task.Factory.StartNew(() => Lenstra.GetDivider(n, _random));
-            Task.WaitAll(tasks);
+            var result = new List<LenstraResultOfEllepticCurve>();
+            var cycles = threadsCount / Environment.ProcessorCount;
+            var leftCycles = threadsCount % Environment.ProcessorCount;
 
-            var result = tasks.Select(task => task.Result);
+            // todo: удалить после проверки
+            if (cycles * Environment.ProcessorCount + leftCycles != threadsCount)
+            {
+                throw new InvalidOperationException("Неправильно расчитано количество циклов");
+            }
+
+            for (var k = 0; k < cycles; k++)
+            {
+                var tasks = new Task<LenstraResultOfEllepticCurve>[Environment.ProcessorCount];
+                for (var i = 0; i < tasks.Length; i++)
+                {
+                    tasks[i] = Task.Factory.StartNew(() => _lenstra.GetDivider(n, _random));
+                }
+
+                Task.WaitAll(tasks);
+
+                result.AddRange(tasks.Select(task => task.Result));
+            }
+
+            if (leftCycles > 0)
+            {
+                var tasks = new Task<LenstraResultOfEllepticCurve>[leftCycles];
+                for (var i = 0; i < tasks.Length; i++)
+                {
+                    tasks[i] = Task.Factory.StartNew(() => _lenstra.GetDivider(n, _random));
+                }
+
+                Task.WaitAll(tasks);
+
+                result.AddRange(tasks.Select(task => task.Result));
+            }
+
             return result;
         }
 
+        /// <summary> Найти делитель числа </summary>
+        /// <param name="n">Число, делитель которого необходимо найти</param>
+        /// <param name="threadsCount">Количество потоков == количество ЭК для факторизации</param>
+        /// <returns>Делитель или null</returns>
         public BigInteger? LenstraMultiThreadFastResult(BigInteger n, int threadsCount)
         {
-            //логических процессоров - 8
-            int cycles = (threadsCount - 1) / Environment.ProcessorCount + 1;
-            var tasks = new Task<LenstraResultOfEllepticCurve>[Environment.ProcessorCount];
-            LenstraResultOfEllepticCurve result = null;
-            for (int k = 0; k < cycles; k++)
+            var cycles = (threadsCount - 1) / Environment.ProcessorCount + 1;
+            for (var k = 0; k < cycles; k++)
             {
-                    var cts = new CancellationTokenWithDisposedState();
-                    for (int i = 0; i < tasks.Length; i++)
-                        tasks[i] =
-                            Task.Factory.StartNew(() => Lenstra.GetDividerWithCancel(n, _random, cts.Token),
-                                cts.Token);
+                var cts = new CancellationTokenSource();
+                var tasks = new Task<LenstraResultOfEllepticCurve>[Environment.ProcessorCount];
+                for (var i = 0; i < tasks.Length; i++)
+                {
+                    tasks[i] = Task.Factory.StartNew(() => _lenstra.GetDividerWithCancel(n, _random, cts.Token),
+                        cts.Token);
+                }
 
-                    Task.WaitAny(tasks);
-                    if (tasks.Any(x => x.Status == TaskStatus.RanToCompletion && x.Result.Success))
-                    {
-                        result =
-                            tasks.First(x => x.Status == TaskStatus.RanToCompletion && x.Result.Success).Result;
-                    }
-                    cts.Cancel();
-                    if (result != null) return result.Divider;
-                
+                Task.WaitAny(tasks);
+                var successedTask =
+                    tasks.FirstOrDefault(x => x.Status == TaskStatus.RanToCompletion && x.Result.Success);
+
+                cts.Cancel();
+                if (successedTask?.Result != null)
+                {
+                    return successedTask.Result.Divider;
+                }
             }
+
             return null;
         }
 
         /// <summary> Время(сек.) нахождения делителя </summary>
-        public MinTimeResult GetLenstraMultiThreadFastResultSeconds(BigInteger n, int threadsCount)
+        /// <param name="n">Число, делитель которого необходимо найти</param>
+        /// <param name="threadsCount">Количество потоков == количество ЭК для факторизации</param>
+        public FactorizeTimeResult GetLenstraMultiThreadFastResultSeconds(BigInteger n, int threadsCount)
         {
-            var start = DateTime.Now;
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
             var divider = LenstraMultiThreadFastResult(n, threadsCount);
-            var result = new MinTimeResult();
-            if (divider.HasValue)
+            stopWatch.Stop();
+
+            return new FactorizeTimeResult
             {
-                result.DividerDimension = divider.Value.ToString().Length;
-                result.Time = (DateTime.Now - start).TotalSeconds;
-                return result;
-            }
-            result.TargetDimension = n.ToString().Length;
-            result.Time = null;
-            return result;
+                Divider = divider,
+                TimeSpan = TimeSpan.FromTicks(stopWatch.ElapsedTicks),
+                FactorizedNumber = n
+            };
         }
-
-
     }
 }

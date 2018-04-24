@@ -2,12 +2,13 @@
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
-using ExtraUtils;
 using LenstraAlgorithm;
 using Utils;
 
 namespace EdwardsCurves.Lenstra
 {
+    using LenstraAlgorithm.Dto;
+
     public class ProjectiveEdwardsLenstra : ILenstra
     {
         public BigInteger B1 = BigInteger.Parse("1000000");

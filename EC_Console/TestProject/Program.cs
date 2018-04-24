@@ -4,7 +4,7 @@ using System.Numerics;
 using EC_Console;
 using EdwardsCurves;
 using EdwardsCurves.Lenstra;
-using ExtraUtils;
+using LenstraAlgorithm;
 using Utils;
 
 namespace TestProject
@@ -167,7 +167,7 @@ namespace TestProject
         {
             Console.WriteLine("ProjectiveEdwardsLenstra results: ");
             var n = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
-            var multThreadLenstra = new MultithreadLenstra(new ProjectiveEdwardsLenstra());
+            var multThreadLenstra = new MultithreadLenstra<ProjectiveEdwardsLenstra>();
 
             var stopWatch = new Stopwatch();
             stopWatch.Start();
@@ -182,7 +182,7 @@ namespace TestProject
         {
             Console.WriteLine("ClassicLenstra results: ");
             var n = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
-            var multThreadLenstra = new MultithreadLenstra(new ClassicLenstra());
+            var multThreadLenstra = new MultithreadLenstra<ClassicLenstra>();
             
             var stopWatch = new Stopwatch();
             stopWatch.Start();
@@ -196,7 +196,7 @@ namespace TestProject
         private static void Test8()
         {
             // BigInteger fieldOrder = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
-            BigInteger fieldOrder = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
+            var fieldOrder = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
             BigInteger x, y, d;
             var random = new Random();
             do
