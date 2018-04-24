@@ -49,7 +49,6 @@
     <Compile Include="EllepticCurve\PointOfEC.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Lenstra\ZeroDivideException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

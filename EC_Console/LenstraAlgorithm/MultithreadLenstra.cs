@@ -77,8 +77,7 @@ namespace EC_Console
             LenstraResultOfEllepticCurve result = null;
             for (int k = 0; k < cycles; k++)
             {
-                using (var cts = new CancellationTokenWithDisposedState())
-                {
+                    var cts = new CancellationTokenWithDisposedState();
                     for (int i = 0; i < tasks.Length; i++)
                         tasks[i] =
                             Task.Factory.StartNew(() => Lenstra.GetDividerWithCancel(n, _random, cts.Token),
@@ -92,7 +91,7 @@ namespace EC_Console
                     }
                     cts.Cancel();
                     if (result != null) return result.Divider;
-                }
+                
             }
             return null;
         }

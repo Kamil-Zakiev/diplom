@@ -44,8 +44,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EdwardsCurvePoint.cs" />
-    <Compile Include="Lenstra\EdwardsLenstra.cs" />
+    <Compile Include="EdwardsCurvePointCalculator.cs" />
+    <Compile Include="IEdwardsCurve.cs" />
+    <Compile Include="Lenstra\ProjectiveEdwardsLenstra.cs" />
     <Compile Include="PointsFactory.cs" />
+    <Compile Include="EdwardsCurve.cs" />
     <Compile Include="ProjectiveEdwardsCurve.cs" />
     <Compile Include="ProjectiveEdwardsCurvePoint.cs" />
     <Compile Include="ProjectiveEdwardsCurvePointCalculator.cs" />

@@ -38,7 +38,7 @@ namespace EC_Console
             try
             {
                 if (g != 1)
-                    throw new GCDFoundException(g);
+                    throw new GcdFoundException(g);
                 ec = new EllepticCurve(a, b, n);
                 var p0 = new PointOfEC
                 {
@@ -62,7 +62,7 @@ namespace EC_Console
                     p = BigIntegerExtensions.NextPrimaryMillerRabin(p);
                 }
             }
-            catch (GCDFoundException exc)
+            catch (GcdFoundException exc)
             {
                 Console.WriteLine("Поток {0} молодец: {1} = {2} * {3}", 
                     Task.CurrentId, n, exc.GreatestCommonDivisor, n / exc.GreatestCommonDivisor);
@@ -111,7 +111,7 @@ namespace EC_Console
             try
             {
                 if (g != 1)
-                    throw new GCDFoundException(g);
+                    throw new GcdFoundException(g);
                 ec = new EllepticCurve(a, b, n);
                 var p0 = new PointOfEC
                 {
@@ -135,7 +135,7 @@ namespace EC_Console
                     p = BigIntegerExtensions.NextPrimaryMillerRabin(p);
                 }
             }
-            catch (GCDFoundException exc)
+            catch (GcdFoundException exc)
             {
                 Console.WriteLine("Поток {0} молодец: {1} = {2} * {3}", 
                     Task.CurrentId, n, exc.GreatestCommonDivisor, n / exc.GreatestCommonDivisor);

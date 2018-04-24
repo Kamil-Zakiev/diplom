@@ -5,11 +5,11 @@ namespace EdwardsCurves
 {
     public class PointsFactory
     {
-        public ProjectiveEdwardsCurve ProjectiveEdwardsCurve { get; }
+        public IEdwardsCurve EdwardsCurve { get; }
 
-        public PointsFactory(ProjectiveEdwardsCurve projectiveEdwardsCurve)
+        public PointsFactory(IEdwardsCurve projectiveEdwardsCurve)
         {
-            ProjectiveEdwardsCurve = projectiveEdwardsCurve;
+            EdwardsCurve  = projectiveEdwardsCurve;
         }
 
         public ProjectiveEdwardsCurvePoint CreatePoint(BigInteger parameterX, BigInteger parameterY,
@@ -17,7 +17,41 @@ namespace EdwardsCurves
         {
             CheckPointOnCurve(parameterX, parameterY, parameterZ);
 
-            return new ProjectiveEdwardsCurvePoint(parameterX, parameterY, parameterZ, ProjectiveEdwardsCurve);
+            return new ProjectiveEdwardsCurvePoint(parameterX, parameterY, parameterZ, EdwardsCurve );
+        }
+        
+        public EdwardsCurvePoint CreatePoint(BigInteger parameterX, BigInteger parameterY)
+        {
+            CheckPointOnCurve(parameterX, parameterY);
+
+            return new EdwardsCurvePoint(parameterX, parameterY, EdwardsCurve );
+        }
+
+        private void CheckPointOnCurve(BigInteger x, BigInteger y)
+        {
+            var x2 = x * x;
+            var y2 = y * y;
+            var left = x2 + y2;
+            var right = 1 + EdwardsCurve .ParameterD * x2 * y2;
+
+            var diff = left - right;
+            if (diff % EdwardsCurve .FieldOrder == 0)
+            {
+                return;
+            }
+            
+            throw new InvalidOperationException("Точка не принадлежит кривой");
+        }
+        
+        public bool SoftCheckPointOnCurve(BigInteger x, BigInteger y)
+        {
+            var x2 = x * x;
+            var y2 = y * y;
+            var left = x2 + y2;
+            var right = 1 + EdwardsCurve .ParameterD * x2 * y2;
+
+            var diff = left - right;
+            return diff % EdwardsCurve.FieldOrder == 0;
         }
 
         private void CheckPointOnCurve(BigInteger x, BigInteger y, BigInteger z)
@@ -26,15 +60,17 @@ namespace EdwardsCurves
             var y2 = y * y;
             var z2 = z * z;
             var left = x2 * z2 + y2 * z2;
-            var right = z2 * z2 + ProjectiveEdwardsCurve.ParameterD * x2 * y2;
+            var right = z2 * z2 + EdwardsCurve .ParameterD * x2 * y2;
 
             var diff = left - right;
-            if (diff % ProjectiveEdwardsCurve.FieldOrder == 0)
+            if (diff % EdwardsCurve .FieldOrder == 0)
             {
                 return;
             }
             
             throw new InvalidOperationException("Точка не принадлежит кривой");
         }
+        
+        
     }
 }

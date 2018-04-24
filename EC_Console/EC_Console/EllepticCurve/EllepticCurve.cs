@@ -118,7 +118,7 @@ namespace EC_Console
 
             var lamdZnam = point2.X - point1.X >= BigInteger.Zero ? point2.X - point1.X : point2.X - point1.X + p;
             if (lamdZnam != 0 && BigInteger.GreatestCommonDivisor(lamdZnam, p) > 1)
-                throw new GCDFoundException(BigInteger.GreatestCommonDivisor(lamdZnam, p));
+                throw new GcdFoundException(BigInteger.GreatestCommonDivisor(lamdZnam, p));
 
             point1.X = point1.X % p;
             point2.X = point2.X % p;
@@ -260,5 +260,6 @@ namespace EC_Console
             }
         }
 
+        public BigInteger FieldOrder => p;
     }
 }

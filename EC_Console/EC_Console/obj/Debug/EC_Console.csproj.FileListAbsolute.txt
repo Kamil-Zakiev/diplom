@@ -21,3 +21,5 @@ E:\Stash\diplom\EC_Console\EC_Console\bin\Debug\EC_Console.exe
 E:\Stash\diplom\EC_Console\EC_Console\bin\Debug\EC_Console.pdb
 E:\Stash\diplom\EC_Console\EC_Console\bin\Debug\Utils.dll
 E:\Stash\diplom\EC_Console\EC_Console\bin\Debug\Utils.pdb
+E:\Stash\diplom\EC_Console\EC_Console\bin\Debug\LenstraAlgorithm.dll
+E:\Stash\diplom\EC_Console\EC_Console\bin\Debug\LenstraAlgorithm.pdb

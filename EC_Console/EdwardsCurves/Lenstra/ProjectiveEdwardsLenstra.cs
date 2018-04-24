@@ -8,9 +8,9 @@ using Utils;
 
 namespace EdwardsCurves.Lenstra
 {
-    public class EdwardsLenstra : ILenstra
+    public class ProjectiveEdwardsLenstra : ILenstra
     {
-        public BigInteger B1 = BigInteger.Parse("100000");
+        public BigInteger B1 = BigInteger.Parse("1000000");
 
         /// <summary>  Возвращает объект LenstraResultOfEllepticCurve </summary>
         /// <param name="n">Число, у которого требуется найти делитель</param>
@@ -30,13 +30,22 @@ namespace EdwardsCurves.Lenstra
             var point1 = pointsFactory.CreatePoint(x, y, z);
             
             BigInteger p = 2;
+            BigInteger step = 2000;
+            long iteration = 0;
             while (p < B1)
             {
                 var pr = p;
                 while (pr < B1)
                 {
                     point1 = calculator.Mult(p, point1);
+
+                    if (iteration++ % step != 0)
+                    {
+                        pr *= p;
+                        continue;
+                    }
                     
+                    // вычисляем НОД только через каждые step итераций, т.к. НОД уменьшает производительность 
                     var gcd = BigInteger.GreatestCommonDivisor(point1.ParameterZ, n);
                     if (gcd != BigInteger.One)
                     {
@@ -49,8 +58,6 @@ namespace EdwardsCurves.Lenstra
                             WastedTime = DateTime.Now - startTime
                         };
                     }
-                    
-                    pr *= p;
                 }
                 p = BigIntegerExtensions.NextPrimaryMillerRabin(p);
             }
@@ -86,6 +93,8 @@ namespace EdwardsCurves.Lenstra
             var point1 = pointsFactory.CreatePoint(x, y, z);
             
             BigInteger p = 2;
+            BigInteger step = 1;
+            long iteration = 0;
             while (p < B1 && !token.IsCancellationRequested)
             {
                 var pr = p;
@@ -93,7 +102,20 @@ namespace EdwardsCurves.Lenstra
                 {
                     point1 = calculator.Mult(p, point1);
                     
-                    var gcd = BigInteger.GreatestCommonDivisor(point1.ParameterZ, n);
+//                    if (iteration++ % step != 0)
+//                    {
+//                        pr *= p;
+//                        continue;
+//                    }
+
+                    pr *= p;
+                    if (point1.ParameterX == BigInteger.Zero)
+                    {
+                        continue;
+                    }
+                    
+                    // вычисляем НОД только через каждые step итераций, т.к. НОД уменьшает производительность 
+                    var gcd = BigInteger.GreatestCommonDivisor(point1.ParameterX, n);
                     if (gcd != BigInteger.One)
                     {
                         Console.WriteLine($"Поток {Task.CurrentId} молодец: {n} = {gcd} * {n / gcd}");
@@ -105,8 +127,6 @@ namespace EdwardsCurves.Lenstra
                             WastedTime = DateTime.Now - startTime
                         };
                     }
-                    
-                    pr *= p;
                 }
                 p = BigIntegerExtensions.NextPrimaryMillerRabin(p);
             }

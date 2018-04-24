@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Numerics;
 
-namespace EC_Console
+namespace Utils
 {
     /// <summary>
     /// Исключение для выхода из алгоритма Ленстры
     /// </summary>
-    public class GCDFoundException: Exception
+    public class GcdFoundException: Exception
     {
         public new string Message { get; set; }
         public BigInteger GreatestCommonDivisor { get; set; }
-        public GCDFoundException(BigInteger greatestCommonDivisor)
+        public GcdFoundException(BigInteger greatestCommonDivisor, string message = null)
         {
-            Message = "Найден НОД!";
+            Message = message ?? "Найден НОД!";
             this.GreatestCommonDivisor = greatestCommonDivisor;
         }
     }

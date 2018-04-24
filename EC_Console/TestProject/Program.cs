@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Numerics;
 using EC_Console;
 using EdwardsCurves;
@@ -12,7 +13,10 @@ namespace TestProject
     {
         public static void Main(string[] args)
         {
+            //EdwardCurvesTest.Start();
+           // Test8();
             Test6();
+            Test7();
         }
 
         private static void Test1()
@@ -161,20 +165,74 @@ namespace TestProject
 
         private static void Test6()
         {
+            Console.WriteLine("ProjectiveEdwardsLenstra results: ");
             var n = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
-            var multThreadLenstra = new MultithreadLenstra(new EdwardsLenstra());
-            var res = multThreadLenstra.LenstraMultiThreadFastResult(n, 160);
+            var multThreadLenstra = new MultithreadLenstra(new ProjectiveEdwardsLenstra());
 
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            var res = multThreadLenstra.LenstraMultiThreadFastResult(n, 160);
+            stopWatch.Stop();
+            
             Console.WriteLine(res);
+            Console.WriteLine("Elapsed ms: " + stopWatch.ElapsedMilliseconds);
         }
 
         private static void Test7()
         {
+            Console.WriteLine("ClassicLenstra results: ");
             var n = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
             var multThreadLenstra = new MultithreadLenstra(new ClassicLenstra());
+            
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
             var res = multThreadLenstra.LenstraMultiThreadFastResult(n, 160);
+            stopWatch.Stop();
 
             Console.WriteLine(res);
+            Console.WriteLine("Elapsed ms: " + stopWatch.ElapsedMilliseconds);
+        }
+      
+        private static void Test8()
+        {
+            // BigInteger fieldOrder = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
+            BigInteger fieldOrder = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
+            BigInteger x, y, d;
+            var random = new Random();
+            do
+            {
+                x = BigIntegerExtensions.GetNextRandom(random, fieldOrder);
+                y = BigIntegerExtensions.GetNextRandom(random, fieldOrder);
+                d = ((x * x + y * y - 1) * (x * x * y * y).Inverse(fieldOrder)).Mod(fieldOrder);
+            } while (d == 1 || d == 0);
+
+            var edwardsCurve = new EdwardsCurve(d, fieldOrder);
+            var pointsFactory = new PointsFactory(edwardsCurve);
+
+            var calculator = new EdwardsCurvePointCalculator();
+            var point1 = pointsFactory.CreatePoint(x, y);
+            
+            var b1 = 100000;
+            BigInteger p = 2;
+            
+            try
+            {
+                while (p < b1)
+                {
+                    var pr = p;
+                    while (pr < b1)
+                    {
+                        point1 = calculator.Mult(p, point1);
+                        pr *= p;
+                    }
+                    p = BigIntegerExtensions.NextPrimaryMillerRabin(p);
+                }
+            }
+            catch (GcdFoundException exc)
+            {
+                Console.WriteLine(exc.GreatestCommonDivisor);
+            }
+
         }
     }
 }

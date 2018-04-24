@@ -3,7 +3,7 @@ using LenstraAlgorithm;
 
 namespace EdwardsCurves
 {
-    public class ProjectiveEdwardsCurve : IEllepticCurve
+    public class ProjectiveEdwardsCurve : IEdwardsCurve
     {
         public ProjectiveEdwardsCurve(BigInteger parameterD, BigInteger fieldOrder)
         {

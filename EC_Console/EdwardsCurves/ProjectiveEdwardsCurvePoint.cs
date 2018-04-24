@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using ExtraUtils;
+using LenstraAlgorithm;
 
 namespace EdwardsCurves
 {
@@ -12,7 +13,7 @@ namespace EdwardsCurves
         public BigInteger ParameterZ { get; }
         
         public ProjectiveEdwardsCurvePoint(BigInteger parameterX, BigInteger parameterY, BigInteger parameterZ,
-            ProjectiveEdwardsCurve projectiveEdwardsCurve)
+            IEdwardsCurve projectiveEdwardsCurve)
         {
             ProjectiveEdwardsCurve = projectiveEdwardsCurve;
 
@@ -21,7 +22,7 @@ namespace EdwardsCurves
             ParameterZ = parameterZ.Mod(projectiveEdwardsCurve.FieldOrder);
         }
 
-        public ProjectiveEdwardsCurve ProjectiveEdwardsCurve { get; }
+        public IEdwardsCurve ProjectiveEdwardsCurve { get; }
 
         public EdwardsCurvePoint ToEdwardsCurvePoint()
         {
