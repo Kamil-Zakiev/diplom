@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace Analisys
+﻿namespace ClassesAnalisys
 {
+    using System;
+    using Analisys.Classificators;
     using Classificators;
 
     /// <summary> Класс, инкапсулирующий информацию об одной эллиптической кривой </summary>

@@ -1,6 +1,8 @@
-﻿namespace Analisys.Classificators
+﻿namespace ClassesAnalisys.Classificators
 {
     using System;
+    using Analisys.Classificators;
+    using ClassesAnalisys;
 
     public class ClassifyingItem
     {

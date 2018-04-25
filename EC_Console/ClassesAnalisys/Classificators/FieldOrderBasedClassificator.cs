@@ -1,26 +1,24 @@
 ﻿namespace Analisys.Classificators
 {
-    public class Classificator
+    using System;
+    using ClassesAnalisys;
+    using ClassesAnalisys.Classificators;
+
+    public class FieldOrderBasedClassificator//: IClassificator
     {
-        public Classificator(ClassifyingItem classifyingItem)
-        {
-            ClassifyingItem = classifyingItem;
-        }
-
-        private ClassifyingItem ClassifyingItem { get; }
-
         public CurveClass Classify(CurveBaseInfo curveInfo)
         {
             var result = new CurveClass();
-            if (curveInfo.EdgeB <= 100)
+            
+            if (curveInfo.EdgeB <= Math.Pow(curveInfo.FieldOrder, 0.25))
             {
                 result.ClassNumber = 1;
             }
-            else if (curveInfo.EdgeB <= 1000)
+            else if (curveInfo.EdgeB <= Math.Pow(curveInfo.FieldOrder, 0.33))
             {
                 result.ClassNumber = 2;
             }
-            else if (curveInfo.EdgeB <= 10000)
+            else if (curveInfo.EdgeB <= Math.Pow(curveInfo.FieldOrder, 0.5))
             {
                 result.ClassNumber = 3;
             }
@@ -28,8 +26,8 @@
             {
                 result.ClassNumber = 4;
             }
-
-            return ClassifyingItem.Classify(curveInfo);
+            
+            return result;
         }
     }
 }

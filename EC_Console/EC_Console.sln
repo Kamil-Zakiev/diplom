@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_Console", "EC_Console\EC_Console.csproj", "{9E9C47EA-D709-4F36-86E1-B9E2B1776DC9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analisys", "Analisys\Analisys.csproj", "{30116DBC-DA13-4A2B-9A7E-79243A6C802A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassesAnalisys", "ClassesAnalisys\ClassesAnalisys.csproj", "{30116DBC-DA13-4A2B-9A7E-79243A6C802A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdwardsCurves", "EdwardsCurves\EdwardsCurves.csproj", "{B1D96FA9-0A82-463A-B298-340155967A50}"
 EndProject
@@ -14,6 +14,20 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils", "Utils\Utils.csproj", "{7C44EC61-EB15-423B-B98F-A5B65178C42B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LenstraAlgorithm", "LenstraAlgorithm\LenstraAlgorithm.csproj", "{18CF89F3-A1B0-44CC-AE40-500D33946921}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Analisys", "Analisys", "{B3C778F6-CFD3-4024-80D4-A189D1422B6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalizingEllepticCurveResult", "AnalizingEllepticCurveResult\AnalizingEllepticCurveResult.csproj", "{1248A3EF-0F0D-47D3-B769-629ECCD74025}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassesDataGeneration", "ClassesDataGeneration\ClassesDataGeneration.csproj", "{F4C58DE1-4137-4703-A2F1-6C8FAE64C2DF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ClassesOfCurves", "ClassesOfCurves", "{1D1F25BA-2395-4F1A-8B91-266E56BADE1F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EllepticCurveResults", "EllepticCurveResults", "{AD108FFD-420D-4327-84DA-408667E94F3A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EllepticCurveResultGeneration", "EllepticCurveResultGeneration\EllepticCurveResultGeneration.csproj", "{B235E006-471A-444B-AE5F-F59C1B7CD099}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomFactorMethodAnalisys", "CustomFactorMethodAnalisys\CustomFactorMethodAnalisys.csproj", "{7E813699-F907-4279-B09D-5AD085F9A68D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,8 +59,33 @@ Global
 		{18CF89F3-A1B0-44CC-AE40-500D33946921}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18CF89F3-A1B0-44CC-AE40-500D33946921}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18CF89F3-A1B0-44CC-AE40-500D33946921}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1248A3EF-0F0D-47D3-B769-629ECCD74025}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1248A3EF-0F0D-47D3-B769-629ECCD74025}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1248A3EF-0F0D-47D3-B769-629ECCD74025}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1248A3EF-0F0D-47D3-B769-629ECCD74025}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4C58DE1-4137-4703-A2F1-6C8FAE64C2DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4C58DE1-4137-4703-A2F1-6C8FAE64C2DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4C58DE1-4137-4703-A2F1-6C8FAE64C2DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4C58DE1-4137-4703-A2F1-6C8FAE64C2DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B235E006-471A-444B-AE5F-F59C1B7CD099}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B235E006-471A-444B-AE5F-F59C1B7CD099}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B235E006-471A-444B-AE5F-F59C1B7CD099}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B235E006-471A-444B-AE5F-F59C1B7CD099}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E813699-F907-4279-B09D-5AD085F9A68D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E813699-F907-4279-B09D-5AD085F9A68D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E813699-F907-4279-B09D-5AD085F9A68D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E813699-F907-4279-B09D-5AD085F9A68D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1D1F25BA-2395-4F1A-8B91-266E56BADE1F} = {B3C778F6-CFD3-4024-80D4-A189D1422B6A}
+		{30116DBC-DA13-4A2B-9A7E-79243A6C802A} = {1D1F25BA-2395-4F1A-8B91-266E56BADE1F}
+		{F4C58DE1-4137-4703-A2F1-6C8FAE64C2DF} = {1D1F25BA-2395-4F1A-8B91-266E56BADE1F}
+		{AD108FFD-420D-4327-84DA-408667E94F3A} = {B3C778F6-CFD3-4024-80D4-A189D1422B6A}
+		{1248A3EF-0F0D-47D3-B769-629ECCD74025} = {AD108FFD-420D-4327-84DA-408667E94F3A}
+		{B235E006-471A-444B-AE5F-F59C1B7CD099} = {AD108FFD-420D-4327-84DA-408667E94F3A}
+		{7E813699-F907-4279-B09D-5AD085F9A68D} = {B3C778F6-CFD3-4024-80D4-A189D1422B6A}
 	EndGlobalSection
 EndGlobal

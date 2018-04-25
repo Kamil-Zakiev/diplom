@@ -1,4 +1,4 @@
-﻿namespace Analisys.Classificators
+﻿namespace ClassesAnalisys.Classificators
 {
     public class CurveBaseInfo
     {

@@ -1,10 +1,13 @@
-﻿namespace Analisys
+﻿namespace ClassesAnalisys
 {
     using System;
     using System.IO;
     using System.Linq;
+    using Analisys;
+    using Analisys.Classificators;
     using Classificators;
 
+    /// <summary> Оценка классов ЭК в зависимости от размерности делителя </summary>
     internal class Program
     {
         public static void Main(string[] args)

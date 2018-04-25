@@ -1,8 +1,10 @@
-﻿namespace Analisys.Classificators
+﻿namespace ClassesAnalisys.Classificators
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Analisys.Classificators;
+    using ClassesAnalisys;
 
     public static class ClassificatorFactory
     {

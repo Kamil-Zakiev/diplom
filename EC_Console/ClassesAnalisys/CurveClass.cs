@@ -1,4 +1,4 @@
-﻿namespace Analisys
+﻿namespace ClassesAnalisys
 {
     /// <summary> Класс эллиптической кривой </summary>
     public class CurveClass
