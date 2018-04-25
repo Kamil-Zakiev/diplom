@@ -1,8 +1,8 @@
-﻿using System;
-using System.Numerics;
-
-namespace EdwardsCurves
+﻿namespace EdwardsCurves.ProjectiveEdwardsCurves
 {
+    using System;
+    using System.Numerics;
+
     /// <summary> Calculator for points of a projective Edwards curve </summary>
     public class ProjectiveEdwardsCurvePointCalculator
     {
@@ -19,28 +19,8 @@ namespace EdwardsCurves
             }
 
             var (xSum, ySum, zSum) = AdvancedCalc(point1, point2);
-            
+
             return new ProjectiveEdwardsCurvePoint(xSum, ySum, zSum, point1.ProjectiveEdwardsCurve);
-        }
-
-        [Obsolete("doesn't work: (6, 12, 2) + (0, 1, 1) != (x = 3, y = 6)")]
-        private (BigInteger, BigInteger, BigInteger) SimpleCalc(ProjectiveEdwardsCurvePoint point1,
-            ProjectiveEdwardsCurvePoint point2)
-        {
-            var x1 = point1.ParameterX;
-            var x2 = point2.ParameterX;
-
-            var y1 = point1.ParameterY;
-            var y2 = point2.ParameterY;
-
-            var z1 = point1.ParameterZ;
-            var z2 = point2.ParameterZ;
-
-            var xSum = z1 * z2 * (x1 * y1 + x2 * y2);
-            var ySum = z1 * z2 * (y1 * y2 - x1 * x2);
-            var zSum = z1 * z1 * z2 * z2 + ((ProjectiveEdwardsCurve)point1.ProjectiveEdwardsCurve).ParameterD * x1 * x2 * y1 * y2;
-
-            return (xSum, ySum, zSum);
         }
 
         private (BigInteger, BigInteger, BigInteger) AdvancedCalc(ProjectiveEdwardsCurvePoint point1,
@@ -55,7 +35,7 @@ namespace EdwardsCurves
             var z1 = point1.ParameterZ;
             var z2 = point2.ParameterZ;
 
-            var parameterD = ((ProjectiveEdwardsCurve)point1.ProjectiveEdwardsCurve).ParameterD;
+            var parameterD = point1.ProjectiveEdwardsCurve.ParameterD;
 
             var a = z1 * z2;
             var b = a * a;
@@ -80,7 +60,7 @@ namespace EdwardsCurves
             }
 
             var b = p;
-            var q = ((ProjectiveEdwardsCurve)p.ProjectiveEdwardsCurve).NeitralPoint;
+            var q = ((ProjectiveEdwardsCurve) p.ProjectiveEdwardsCurve).NeitralPoint;
 
             while (!k.IsZero)
             {
@@ -88,9 +68,11 @@ namespace EdwardsCurves
                 {
                     q = Sum(q, b);
                 }
+
                 b = Sum(b, b);
                 k /= 2;
             }
+
             return q;
         }
     }

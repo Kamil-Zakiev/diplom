@@ -3,22 +3,26 @@ using System.Diagnostics;
 using System.Numerics;
 using EC_Console;
 using EdwardsCurves;
-using EdwardsCurves.Lenstra;
 using LenstraAlgorithm;
 using Utils;
 
 namespace TestProject
 {
+    using EdwardsCurves.AffineEdwardsCurves.Lenstra;
+    using EdwardsCurves.ProjectiveEdwardsCurves;
+    using EdwardsCurves.ProjectiveEdwardsCurves.Lenstra;
+
     internal class Program
     {
         public static void Main(string[] args)
         {
             //EdwardCurvesTest.Start();
-           // Test8();
+            //Test8();
             Test6();
-            Test7();
+            // Test7();
         }
 
+        /// <summary> Тест на корректность суммирования </summary>
         private static void Test1()
         {
             var d = 8;
@@ -192,47 +196,20 @@ namespace TestProject
             Console.WriteLine(res);
             Console.WriteLine("Elapsed ms: " + stopWatch.ElapsedMilliseconds);
         }
-      
+
         private static void Test8()
         {
-            // BigInteger fieldOrder = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
-            var fieldOrder = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
-            BigInteger x, y, d;
-            var random = new Random();
-            do
-            {
-                x = BigIntegerExtensions.GetNextRandom(random, fieldOrder);
-                y = BigIntegerExtensions.GetNextRandom(random, fieldOrder);
-                d = ((x * x + y * y - 1) * (x * x * y * y).Inverse(fieldOrder)).Mod(fieldOrder);
-            } while (d == 1 || d == 0);
-
-            var edwardsCurve = new EdwardsCurve(d, fieldOrder);
-            var pointsFactory = new PointsFactory(edwardsCurve);
-
-            var calculator = new EdwardsCurvePointCalculator();
-            var point1 = pointsFactory.CreatePoint(x, y);
+            Console.WriteLine("AffineEdwardsLenstra results: ");
+            var n = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
+            var multThreadLenstra = new MultithreadLenstra<AffineEdwardsLenstra>();
             
-            var b1 = 100000;
-            BigInteger p = 2;
-            
-            try
-            {
-                while (p < b1)
-                {
-                    var pr = p;
-                    while (pr < b1)
-                    {
-                        point1 = calculator.Mult(p, point1);
-                        pr *= p;
-                    }
-                    p = BigIntegerExtensions.NextPrimaryMillerRabin(p);
-                }
-            }
-            catch (GcdFoundException exc)
-            {
-                Console.WriteLine(exc.GreatestCommonDivisor);
-            }
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            var res = multThreadLenstra.LenstraMultiThreadFastResult(n, 160);
+            stopWatch.Stop();
 
+            Console.WriteLine(res);
+            Console.WriteLine("Elapsed ms: " + stopWatch.ElapsedMilliseconds);
         }
     }
 }

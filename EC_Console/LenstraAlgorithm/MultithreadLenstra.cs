@@ -26,10 +26,10 @@
         /// <param name="pathTwoPrimesMultiple">Имя файла с числами для факторизации</param>
         /// <param name="threadsCount">Колчиство потоков</param>
         /// <returns>Список результатов со всех ЭК</returns>
-        public List<LenstraResultOfEllepticCurve> UseThreadsParallelism(string pathTwoPrimesMultiple, int threadsCount)
+        public List<LenstraFactorizationResult> UseThreadsParallelism(string pathTwoPrimesMultiple, int threadsCount)
         {
             var twoPrimeMultiplesStrings = File.ReadAllLines(pathTwoPrimesMultiple);
-            var list = new List<LenstraResultOfEllepticCurve>();
+            var list = new List<LenstraFactorizationResult>();
             foreach (var n in twoPrimeMultiplesStrings.Select(BigInteger.Parse).Take(10))
             {
                 list.AddRange(LenstraMultiThreadResults(n, threadsCount));
@@ -56,7 +56,7 @@
         /// <summary> Факторизация методом Ленстры. Каждая кривая пытается факторизовать число вне зависимости от остальных кривых. </summary>
         /// <param name="n">Число, которое необходимо факторизовать</param>
         /// <param name="threadsCount">Количество потоков == количество ЭК</param>
-        public IReadOnlyList<LenstraResultOfEllepticCurve> LenstraMultiThreadResults(BigInteger n, int threadsCount)
+        public IReadOnlyList<LenstraFactorizationResult> LenstraMultiThreadResults(BigInteger n, int threadsCount)
         {
             if (n == BigInteger.One)
             {
@@ -68,7 +68,7 @@
                 throw new Exception("Количество потоков не может быть < 1");
             }
 
-            var result = new List<LenstraResultOfEllepticCurve>();
+            var result = new List<LenstraFactorizationResult>();
             var cycles = threadsCount / Environment.ProcessorCount;
             var leftCycles = threadsCount % Environment.ProcessorCount;
 
@@ -80,7 +80,7 @@
 
             for (var k = 0; k < cycles; k++)
             {
-                var tasks = new Task<LenstraResultOfEllepticCurve>[Environment.ProcessorCount];
+                var tasks = new Task<LenstraFactorizationResult>[Environment.ProcessorCount];
                 for (var i = 0; i < tasks.Length; i++)
                 {
                     tasks[i] = Task.Factory.StartNew(() => _lenstra.GetDivider(n, _random));
@@ -93,7 +93,7 @@
 
             if (leftCycles > 0)
             {
-                var tasks = new Task<LenstraResultOfEllepticCurve>[leftCycles];
+                var tasks = new Task<LenstraFactorizationResult>[leftCycles];
                 for (var i = 0; i < tasks.Length; i++)
                 {
                     tasks[i] = Task.Factory.StartNew(() => _lenstra.GetDivider(n, _random));
@@ -117,7 +117,7 @@
             for (var k = 0; k < cycles; k++)
             {
                 var cts = new CancellationTokenSource();
-                var tasks = new Task<LenstraResultOfEllepticCurve>[Environment.ProcessorCount];
+                var tasks = new Task<LenstraFactorizationResult>[Environment.ProcessorCount];
                 for (var i = 0; i < tasks.Length; i++)
                 {
                     tasks[i] = Task.Factory.StartNew(() => _lenstra.GetDividerWithCancel(n, _random, cts.Token),

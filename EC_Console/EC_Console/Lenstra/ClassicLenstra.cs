@@ -14,9 +14,9 @@ namespace EC_Console
     {
         public BigInteger B1 = BigInteger.Parse("100000");
 
-        /// <summary>  Возвращает объект LenstraResultOfEllepticCurve </summary>
+        /// <summary>  Возвращает объект LenstraFactorizationResult </summary>
         /// <param name="n">Число, у которого требуется найти делитель</param>
-        public LenstraResultOfEllepticCurve GetDivider(BigInteger n, Random random)
+        public LenstraFactorizationResult GetDivider(BigInteger n, Random random)
         {
             var startTime = DateTime.Now;
             BigInteger g, x, y, a, b;
@@ -68,7 +68,7 @@ namespace EC_Console
                 Console.WriteLine("Поток {0} молодец: {1} = {2} * {3}", 
                     Task.CurrentId, n, exc.GreatestCommonDivisor, n / exc.GreatestCommonDivisor);
 
-                return new LenstraResultOfEllepticCurve
+                return new LenstraFactorizationResult
                 {
                     EllepticCurve = ec,
                     TargetNumber = n,
@@ -77,7 +77,7 @@ namespace EC_Console
                 };
             }
 
-            return new LenstraResultOfEllepticCurve
+            return new LenstraFactorizationResult
             {
                 EllepticCurve = ec,
                 TargetNumber = n,
@@ -87,12 +87,12 @@ namespace EC_Console
 
 
         /// <summary>  
-        /// Возвращает объект LenstraResultOfEllepticCurve, 
+        /// Возвращает объект LenstraFactorizationResult, 
         /// если находится какое-то число, то все осатльные потоки прекращаются 
         /// </summary>
         /// <param name="n">Число, у которого требуется найти делитель</param>
         /// <param name="token">Токен отмены</param>
-        public LenstraResultOfEllepticCurve GetDividerWithCancel(BigInteger n, Random random, CancellationToken token)
+        public LenstraFactorizationResult GetDividerWithCancel(BigInteger n, Random random, CancellationToken token)
         {
             var startTime = DateTime.Now;
             BigInteger g, x, y, a, b;
@@ -141,7 +141,7 @@ namespace EC_Console
                 Console.WriteLine("Поток {0} молодец: {1} = {2} * {3}", 
                     Task.CurrentId, n, exc.GreatestCommonDivisor, n / exc.GreatestCommonDivisor);
 
-                return new LenstraResultOfEllepticCurve
+                return new LenstraFactorizationResult
                 {
                     EllepticCurve = ec,
                     TargetNumber = n,
@@ -156,7 +156,7 @@ namespace EC_Console
                 Console.WriteLine("Поток {0} не смог", Task.CurrentId);
 
  
-            return new LenstraResultOfEllepticCurve
+            return new LenstraFactorizationResult
             {
                 EllepticCurve = ec,
                 TargetNumber = n,

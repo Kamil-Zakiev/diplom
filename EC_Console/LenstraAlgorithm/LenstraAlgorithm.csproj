@@ -39,9 +39,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dto\EEndType.cs" />
     <Compile Include="Dto\FactorizeTimeResult.cs" />
     <Compile Include="Dto\LenstraEdges.cs" />
-    <Compile Include="Dto\LenstraResultOfEllepticCurve.cs" />
+    <Compile Include="Dto\LenstraFactorizationResult.cs" />
     <Compile Include="IEllepticCurve.cs" />
     <Compile Include="ILenstra.cs" />
     <Compile Include="MultithreadLenstra.cs" />

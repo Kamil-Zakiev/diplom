@@ -54,7 +54,7 @@ namespace EC_Console
 */
             //факторизация
                 /*
-                var results = new List<LenstraResultOfEllepticCurve>();
+                var results = new List<LenstraFactorizationResult>();
                 foreach (var path in Directory.GetFiles("TwoPrimesMultiple"))
                 {
                     results = (MultithreadLenstra.UseThreadsParallelism(path, threadsCount: 100));

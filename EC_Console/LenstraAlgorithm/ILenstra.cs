@@ -12,13 +12,13 @@
         /// <param name="n">Факторизуемое число</param>
         /// <param name="random">Компонент случайности</param>
         /// <returns>Результатат факторизации</returns>
-        LenstraResultOfEllepticCurve GetDivider(BigInteger n, Random random);
+        LenstraFactorizationResult GetDivider(BigInteger n, Random random);
 
         /// <summary> Факторизовать число n с поддержкой отмены операции</summary>
         /// <param name="n">Факторизуемое число</param>
         /// <param name="random">Компонент случайности</param>
         /// <param name="token">Токен отмены</param>
         /// <returns>Результатат факторизации</returns>
-        LenstraResultOfEllepticCurve GetDividerWithCancel(BigInteger n, Random random, CancellationToken token);
+        LenstraFactorizationResult GetDividerWithCancel(BigInteger n, Random random, CancellationToken token);
     }
 }

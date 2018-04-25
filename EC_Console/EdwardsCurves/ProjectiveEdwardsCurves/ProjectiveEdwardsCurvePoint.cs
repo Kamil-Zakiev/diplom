@@ -1,18 +1,12 @@
-﻿using System.Numerics;
-using LenstraAlgorithm;
-
-namespace EdwardsCurves
+﻿namespace EdwardsCurves.ProjectiveEdwardsCurves
 {
+    using System.Numerics;
+    using AffineEdwardsCurves;
     using Utils;
 
+    /// <summary> Точка на кривой Эдвардса в проективных координатах </summary>
     public class ProjectiveEdwardsCurvePoint
     {
-        public BigInteger ParameterX { get; }
-
-        public BigInteger ParameterY { get; }
-
-        public BigInteger ParameterZ { get; }
-        
         public ProjectiveEdwardsCurvePoint(BigInteger parameterX, BigInteger parameterY, BigInteger parameterZ,
             IEdwardsCurve projectiveEdwardsCurve)
         {
@@ -23,15 +17,25 @@ namespace EdwardsCurves
             ParameterZ = parameterZ.Mod(projectiveEdwardsCurve.FieldOrder);
         }
 
+        /// <summary> Параметр x </summary>
+        public BigInteger ParameterX { get; }
+
+        /// <summary> Параметр y </summary>
+        public BigInteger ParameterY { get; }
+
+        /// <summary> Параметр z </summary>
+        public BigInteger ParameterZ { get; }
+
+        /// <summary> Кривая, которой принадлежит точка </summary>
         public IEdwardsCurve ProjectiveEdwardsCurve { get; }
 
-        public EdwardsCurvePoint ToEdwardsCurvePoint()
+        public AffineEdwardsCurvePoint ToEdwardsCurvePoint()
         {
             var inverseZ = ParameterZ.Inverse(ProjectiveEdwardsCurve.FieldOrder);
 
             var x = ParameterX * inverseZ;
             var y = ParameterY * inverseZ;
-            return new EdwardsCurvePoint(x, y, ProjectiveEdwardsCurve);
+            return new AffineEdwardsCurvePoint(x, y, ProjectiveEdwardsCurve);
         }
 
         public override string ToString()
@@ -42,9 +46,9 @@ namespace EdwardsCurves
         public override bool Equals(object obj)
         {
             var otherPoint = (ProjectiveEdwardsCurvePoint) obj;
-            
+
             // потому что этот метод нужен лишь для тестов. Производительность не важна
-            return this.ToEdwardsCurvePoint().ToString() == otherPoint.ToEdwardsCurvePoint().ToString();
+            return ToEdwardsCurvePoint().ToString() == otherPoint.ToEdwardsCurvePoint().ToString();
         }
     }
 }

@@ -4,7 +4,7 @@
     using System.Numerics;
 
     /// <summary> Результаты эллиптической кривой при попытке факторизации числа </summary>
-    public class LenstraResultOfEllepticCurve
+    public class LenstraFactorizationResult
     {
         /// <summary> Делитель </summary>
         public BigInteger Divider = BigInteger.One;
@@ -26,6 +26,9 @@
 
         /// <summary> Успех? </summary>
         public bool Success => Divider != BigInteger.One;
+
+        /// <summary> Контекст остановки факторизации </summary>
+        public EEndType EndType { get; set; }
 
         public override string ToString()
         {

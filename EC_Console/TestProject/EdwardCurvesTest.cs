@@ -8,19 +8,21 @@ using Utils;
 
 namespace TestProject
 {
+    using EdwardsCurves.AffineEdwardsCurves;
+
     public class EdwardCurvesTest
     {
-        public static void TestSum(EdwardsCurvePoint point1, EdwardsCurvePoint point2)
+        public static void TestSum(AffineEdwardsCurvePoint point1, AffineEdwardsCurvePoint point2)
         {
-            var calculator = new EdwardsCurvePointCalculator();
+            var calculator = new AffineEdwardsCurvePointCalculator();
             var p3 = calculator.Sum(point1, point2);
             
             var fieldOrder = point1.EdwardsCurve.FieldOrder;
             var d = point1.EdwardsCurve.ParameterD;
             CheckEquality(p3.ParameterX, p3.ParameterY, d, fieldOrder);
 
-            point2 = new EdwardsCurvePoint((-point2.ParameterX).Mod(fieldOrder), point2.ParameterY, point2.EdwardsCurve); 
-            p3 = new EdwardsCurvePoint((-p3.ParameterX).Mod(fieldOrder), p3.ParameterY, p3.EdwardsCurve); 
+            point2 = new AffineEdwardsCurvePoint((-point2.ParameterX).Mod(fieldOrder), point2.ParameterY, point2.EdwardsCurve); 
+            p3 = new AffineEdwardsCurvePoint((-p3.ParameterX).Mod(fieldOrder), p3.ParameterY, p3.EdwardsCurve); 
 
             var sum2 = calculator.Sum(point1, p3);
             CheckEquality(sum2.ParameterX, sum2.ParameterY, d, fieldOrder);
@@ -38,7 +40,7 @@ namespace TestProject
         {
             BigInteger fieldOrder = 11;
             BigInteger d = 2;
-            var edwardsCurve = new EdwardsCurve(d, fieldOrder);
+            var edwardsCurve = new AffineEdwardsCurve(d, fieldOrder);
             var pointsFactory = new PointsFactory(edwardsCurve);
 
             var points = new[]
@@ -68,7 +70,7 @@ namespace TestProject
 //            return;
 //            var sum = CreatePoint(7, 3, pointsFactory);
 //            
-//            var calculator = new EdwardsCurvePointCalculator();
+//            var calculator = new AffineEdwardsCurvePointCalculator();
 //            var p3 = calculator.Sum(point1, point2);
 //            CheckEquality(p3.ParameterX, p3.ParameterY, d, fieldOrder);
 //            
@@ -77,7 +79,7 @@ namespace TestProject
 //            Console.WriteLine(p3);
         }
 
-        private static EdwardsCurvePoint CreatePoint(BigInteger x, BigInteger y, PointsFactory pointsFactory)
+        private static AffineEdwardsCurvePoint CreatePoint(BigInteger x, BigInteger y, PointsFactory pointsFactory)
         {
             var d = pointsFactory.EdwardsCurve.ParameterD;
             var fieldOrder = pointsFactory.EdwardsCurve.FieldOrder;
@@ -124,12 +126,12 @@ namespace TestProject
             Console.WriteLine($"x = {x}");
             Console.WriteLine($"y = {y}");
 
-            var edwardsCurve = new EdwardsCurve(d, fieldOrder);
+            var edwardsCurve = new AffineEdwardsCurve(d, fieldOrder);
             Console.WriteLine(edwardsCurve);
             
             var pointsFactory = new PointsFactory(edwardsCurve);
             
-            var points = new List<EdwardsCurvePoint>();
+            var points = new List<AffineEdwardsCurvePoint>();
             for (var x1 = 0; x1 < fieldOrder; x1++)
             {
                 for (var y1 = 0; y1 < fieldOrder; y1++)
@@ -145,7 +147,7 @@ namespace TestProject
 
             Console.WriteLine("Edwards curve has " + points.Count + " points");
 
-            var calculator = new EdwardsCurvePointCalculator();
+            var calculator = new AffineEdwardsCurvePointCalculator();
             var pairs = points.Join(points, p1 => 1, p2 => 1, (p1, p2) => new {p1, p2}).ToArray();
             try
             {
@@ -170,9 +172,9 @@ namespace TestProject
             BigInteger fieldOrder = BigInteger.Parse("7")*BigInteger.Parse("5");
             BigInteger d = 3;
             
-            var edwardsCurve = new EdwardsCurve(d, fieldOrder);
+            var edwardsCurve = new AffineEdwardsCurve(d, fieldOrder);
             var pointsFactory = new PointsFactory(edwardsCurve);
-            var points = new List<EdwardsCurvePoint>();
+            var points = new List<AffineEdwardsCurvePoint>();
             for (var x1 = 0; x1 < fieldOrder; x1++)
             {
                 for (var y1 = 0; y1 < fieldOrder; y1++)
@@ -188,7 +190,7 @@ namespace TestProject
 
             Console.WriteLine("Edwards curve has " + points.Count + " points");
 
-            var calculator = new EdwardsCurvePointCalculator();
+            var calculator = new AffineEdwardsCurvePointCalculator();
             var pairs = points.Join(points, p1 => 1, p2 => 1, (p1, p2) => new {p1, p2}).ToArray();
             try
             {
@@ -212,10 +214,10 @@ namespace TestProject
         {
             BigInteger fieldOrder = BigInteger.Parse("113")*BigInteger.Parse("19");
             BigInteger x = 705, y = 232, d = 1577;
-            var edwardsCurve = new EdwardsCurve(d, fieldOrder);
+            var edwardsCurve = new AffineEdwardsCurve(d, fieldOrder);
             
             var pointsFactory = new PointsFactory(edwardsCurve);
-            var points = new List<EdwardsCurvePoint>();
+            var points = new List<AffineEdwardsCurvePoint>();
             for (var x1 = 0; x1 < fieldOrder; x1++)
             {
                 for (var y1 = 0; y1 < fieldOrder; y1++)
@@ -231,7 +233,7 @@ namespace TestProject
 
             Console.WriteLine("Edwards curve has " + points.Count + " points");
 
-            var calculator = new EdwardsCurvePointCalculator();
+            var calculator = new AffineEdwardsCurvePointCalculator();
             var pairs = points.Join(points, p1 => 1, p2 => 1, (p1, p2) => new {p1, p2}).ToArray();
             
             

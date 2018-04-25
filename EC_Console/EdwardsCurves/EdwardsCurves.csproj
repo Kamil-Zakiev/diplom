@@ -43,15 +43,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EdwardsCurvePoint.cs" />
-    <Compile Include="EdwardsCurvePointCalculator.cs" />
+    <Compile Include="AffineEdwardsCurves\AffineEdwardsCurve.cs" />
+    <Compile Include="AffineEdwardsCurves\AffineEdwardsCurvePoint.cs" />
+    <Compile Include="AffineEdwardsCurves\AffineEdwardsCurvePointCalculator.cs" />
+    <Compile Include="AffineEdwardsCurves\Lenstra\AffineEdwardsLenstra.cs" />
     <Compile Include="IEdwardsCurve.cs" />
-    <Compile Include="Lenstra\ProjectiveEdwardsLenstra.cs" />
     <Compile Include="PointsFactory.cs" />
-    <Compile Include="EdwardsCurve.cs" />
-    <Compile Include="ProjectiveEdwardsCurve.cs" />
-    <Compile Include="ProjectiveEdwardsCurvePoint.cs" />
-    <Compile Include="ProjectiveEdwardsCurvePointCalculator.cs" />
+    <Compile Include="ProjectiveEdwardsCurves\Lenstra\ProjectiveEdwardsLenstra.cs" />
+    <Compile Include="ProjectiveEdwardsCurves\ProjectiveEdwardsCurve.cs" />
+    <Compile Include="ProjectiveEdwardsCurves\ProjectiveEdwardsCurvePoint.cs" />
+    <Compile Include="ProjectiveEdwardsCurves\ProjectiveEdwardsCurvePointCalculator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

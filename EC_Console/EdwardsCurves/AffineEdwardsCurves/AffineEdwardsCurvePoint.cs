@@ -1,24 +1,27 @@
-﻿using System.Numerics;
-using LenstraAlgorithm;
-
-namespace EdwardsCurves
+﻿namespace EdwardsCurves.AffineEdwardsCurves
 {
+    using System.Numerics;
+    using ProjectiveEdwardsCurves;
     using Utils;
 
-    public class EdwardsCurvePoint
+    /// <summary> Точка на кривой Эдвардса в аффинных координатах </summary>
+    public class AffineEdwardsCurvePoint
     {
-        public BigInteger ParameterX { get; }
-        
-        public BigInteger ParameterY { get; }
-
-        public EdwardsCurvePoint(BigInteger x, BigInteger y, IEdwardsCurve edwardsCurve)
+        public AffineEdwardsCurvePoint(BigInteger x, BigInteger y, IEdwardsCurve edwardsCurve)
         {
             ParameterX = x.Mod(edwardsCurve.FieldOrder);
             ParameterY = y.Mod(edwardsCurve.FieldOrder);
 
             EdwardsCurve = edwardsCurve;
         }
-        
+
+        /// <summary> Параметр x </summary>
+        public BigInteger ParameterX { get; }
+
+        /// <summary> Параметр y </summary>
+        public BigInteger ParameterY { get; }
+
+        /// <summary> Кривая, которой принадлежит эта точка </summary>
         public IEdwardsCurve EdwardsCurve { get; }
 
         public ProjectiveEdwardsCurvePoint ToProjectiveEdwardsCurvePoint(BigInteger? z = null)
@@ -34,7 +37,7 @@ namespace EdwardsCurves
 
             return new ProjectiveEdwardsCurvePoint(x, y, z2, EdwardsCurve);
         }
-        
+
         public override string ToString()
         {
             return $"(x = {ParameterX}, y = {ParameterY})";
