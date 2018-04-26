@@ -10,7 +10,7 @@
     {
         private static Dictionary<BigInteger, int> _pR;
 
-        /// <summary> Возвращает случайное число меньшее 'n' </summary>
+        /// <summary> Возвращает случайное число строго меньшее 'n' </summary>
         /// <param name="random"> Объект - генератор случайных чисел </param>
         public static BigInteger GetNextRandom(Random random, BigInteger n)
         {

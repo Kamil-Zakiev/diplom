@@ -24,13 +24,7 @@ namespace EC_Console
         static void Main(string[] args)
         {
             #region Практическая часть диплома. Эксперимент
-            /*
-            //генерирование
-            for (int i = 5; i <= 50; i = i + 5)
-            {
-                var path = string.Format("TwoPrimesMultiple/{0}digitsNumbers.txt", i);
-                TwoPrimesMultipleGenerator.GenerateTwoPrimesMultipleNumbersInFile(path, i / 2);
-            }*/
+            
 /*
             var results = new List<FactorizeTimeResult>();
             foreach (var path in Directory.GetFiles("TwoPrimesMultiple"))
