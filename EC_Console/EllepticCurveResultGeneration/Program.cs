@@ -40,14 +40,25 @@
 
         public static void Main(string[] args)
         {
+            const int startDim = 4;
+            const int endDim = 10;
+            
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             var dataDir = Path.GetFullPath(Path.Combine(baseDirectory, @"..\..\Data"));
             var numberRegex = new Regex(@"\d+");
-            var semiprimesFiles = Directory.GetFiles(SemiprimesResourceDir).OrderBy(fileName =>
+            var semiprimesFiles = Directory.GetFiles(SemiprimesResourceDir)
+                .Select(fileName =>
                 {
                     var minDivStr = numberRegex.Match(fileName).Groups[0];
-                    return Convert.ToInt32(minDivStr.Value);
+                    return new
+                    {
+                        FileName = fileName,
+                        MinDividerDigits = Convert.ToInt32(minDivStr.Value)
+                    };
                 })
+                .Where(dto => startDim <= dto.MinDividerDigits && dto.MinDividerDigits <= endDim)
+                .OrderBy(dto => dto.MinDividerDigits)
+                .Select(dto => dto.FileName)
                 .ToList();
 
             var lenstraVersions = new[]
