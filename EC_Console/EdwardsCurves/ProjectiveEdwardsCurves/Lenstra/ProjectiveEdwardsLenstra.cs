@@ -1,6 +1,7 @@
 ﻿namespace EdwardsCurves.ProjectiveEdwardsCurves.Lenstra
 {
     using System;
+    using System.Globalization;
     using System.Numerics;
     using System.Threading;
     using LenstraAlgorithm;
@@ -21,14 +22,31 @@
         public LenstraFactorizationResult GetDividerWithCancel(BigInteger n, Random random, CancellationToken token)
         {
             var startTime = DateTime.Now;
-            var x = BigIntegerExtensions.GetNextRandom(random, n);
-            var y = BigIntegerExtensions.GetNextRandom(random, n);
-            var z = BigIntegerExtensions.GetNextRandom(random, n);
-
-            var d = ((x * x * z * z + y * y * z * z - z * z * z * z) * (x * x * y * y).Inverse(n)).Mod(n);
-
+            
+            BigInteger x, y, z, d;
+            do
+            { 
+                x = BigIntegerExtensions.GetNextRandom(random, n);
+                y = BigIntegerExtensions.GetNextRandom(random, n);
+                z = BigIntegerExtensions.GetNextRandom(random, n);
+                d = ((x * x * z * z + y * y * z * z - z * z * z * z) * (x * x * y * y).Inverse(n)).Mod(n);
+            } while (d == 1 || d == 0);
+            
             var projectiveEdwardsCurve = new ProjectiveEdwardsCurve(d, n);
-            var pointsFactory = new PointsFactory(projectiveEdwardsCurve);
+            PointsFactory pointsFactory;
+            try
+            {
+                pointsFactory = new PointsFactory(projectiveEdwardsCurve);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Console.WriteLine("d = " + d);
+                Console.WriteLine("x = " + x);
+                Console.WriteLine("y = " + y);
+                Console.WriteLine("z = " + z);
+                throw;
+            }
 
             var calculator = new ProjectiveEdwardsCurvePointCalculator();
             var point1 = pointsFactory.CreatePoint(x, y, z);

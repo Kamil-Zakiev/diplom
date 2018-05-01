@@ -1,1 +1,1 @@
-ClassicLenstra|E:\Stash\diplom\EC_Console\SemiPrimeNumbersGenerator\Resources\MinDivider8Digit.txt
+ProjectiveEdwardsLenstra|E:\Stash\diplom\EC_Console\SemiPrimeNumbersGenerator\Resources\MinDivider10Digit.txt

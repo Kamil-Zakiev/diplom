@@ -73,15 +73,15 @@
             {
                 if (lenstraVersion == nameof(ClassicLenstra))
                 {
-                    ProcessFiles<ClassicLenstra>(semiprimesFiles, dataDir);
+                    ProcessFiles<ClassicLenstra>(semiprimesFiles, dataDir, lenstraVersion);
                 }
                 else if (lenstraVersion == nameof(AffineEdwardsLenstra))
                 {
-                    ProcessFiles<AffineEdwardsLenstra>(semiprimesFiles, dataDir);
+                    ProcessFiles<AffineEdwardsLenstra>(semiprimesFiles, dataDir, lenstraVersion);
                 }
                 else if (lenstraVersion == nameof(ProjectiveEdwardsLenstra))
                 {
-                    ProcessFiles<ProjectiveEdwardsLenstra>(semiprimesFiles, dataDir);
+                    ProcessFiles<ProjectiveEdwardsLenstra>(semiprimesFiles, dataDir, lenstraVersion);
                 }
             }
         }
@@ -106,7 +106,12 @@
             var lastCreatedFile = Directory.GetFiles(dataDir)
                 .Where(fileName => fileName.EndsWith(".txt"))
                 .OrderBy(File.GetCreationTime)
-                .Last();
+                .LastOrDefault();
+
+            if (lastCreatedFile == null)
+            {
+                return result;
+            }
 
             var lastHandledNumber = File.ReadAllLines(lastCreatedFile).Last().Split('|')[0];
             var lastProcessedLine = File.ReadAllLines(result.ProcessingFileName)
@@ -120,11 +125,11 @@
             return result;
         }
 
-        private static void ProcessFiles<TLenstra>(List<string> semiprimesFiles, string dataDir) where TLenstra:ILenstra, new()
+        private static void ProcessFiles<TLenstra>(List<string> semiprimesFiles, string dataDir, string version) where TLenstra:ILenstra, new()
         {
             var mtl = new MultithreadLenstra<TLenstra>();
             
-            if (!string.IsNullOrWhiteSpace(ContinuationInfo.ProcessingFileName))
+            if (version == ContinuationInfo.LenstraVersion && !string.IsNullOrWhiteSpace(ContinuationInfo.ProcessingFileName))
             {
                 semiprimesFiles = semiprimesFiles
                     .SkipWhile(fileName => fileName != ContinuationInfo.ProcessingFileName)
@@ -142,13 +147,16 @@
                 var semiprimes = File.ReadAllLines(semiprimesFile).Take(CountForDimension).Select(BigInteger.Parse)
                     .ToArray();
                 
-                if (ContinuationInfo.ProcessingFileName == semiprimesFile)
+                if (version == ContinuationInfo.LenstraVersion && ContinuationInfo.ProcessingFileName == semiprimesFile)
                 {
                     semiprimes = semiprimes.Skip(ContinuationInfo.LastProcessedLine).ToArray();
                 }
-                
+
+                double k = 0;
                 foreach (var semiprime in semiprimes)
                 {
+                    Console.Write("\rHandling " + semiprime + ". Processed " + (k / semiprimes.Length).ToString("P") + " of " + fileName);
+                    k++;
                     var results = mtl.LenstraMultiThreadResults(semiprime, CurvesCountForSingleNumber);
                     var infos =  results
                             .Select(result => $"{result.TargetNumber}|{result.Divider}|{result.WastedTime.Ticks}")
