@@ -40,8 +40,8 @@
 
         public static void Main(string[] args)
         {
-            const int startDim = 4;
-            const int endDim = 10;
+            const int startDim = 11;
+            const int endDim = 13;
             
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             var dataDir = Path.GetFullPath(Path.Combine(baseDirectory, @"..\..\Data"));
