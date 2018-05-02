@@ -31,6 +31,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomFactorMethodAnalisys"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemiPrimeNumbersGenerator", "SemiPrimeNumbersGenerator\SemiPrimeNumbersGenerator.csproj", "{8247BDC6-8D3B-4BA5-A6BE-A51BB37CCD8B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PointsSumPerformance", "PointsSumPerformance", "{5AFF5DC0-E611-4191-B74E-979309FB006D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PointsSumPerformanceAnalisys", "PointsSumPerformanceAnalisys\PointsSumPerformanceAnalisys.csproj", "{EC6B39F6-A644-45BC-BA1B-F639D0E42522}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +85,10 @@ Global
 		{8247BDC6-8D3B-4BA5-A6BE-A51BB37CCD8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8247BDC6-8D3B-4BA5-A6BE-A51BB37CCD8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8247BDC6-8D3B-4BA5-A6BE-A51BB37CCD8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC6B39F6-A644-45BC-BA1B-F639D0E42522}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC6B39F6-A644-45BC-BA1B-F639D0E42522}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC6B39F6-A644-45BC-BA1B-F639D0E42522}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC6B39F6-A644-45BC-BA1B-F639D0E42522}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -93,5 +101,7 @@ Global
 		{1248A3EF-0F0D-47D3-B769-629ECCD74025} = {AD108FFD-420D-4327-84DA-408667E94F3A}
 		{B235E006-471A-444B-AE5F-F59C1B7CD099} = {AD108FFD-420D-4327-84DA-408667E94F3A}
 		{7E813699-F907-4279-B09D-5AD085F9A68D} = {B3C778F6-CFD3-4024-80D4-A189D1422B6A}
+		{5AFF5DC0-E611-4191-B74E-979309FB006D} = {B3C778F6-CFD3-4024-80D4-A189D1422B6A}
+		{EC6B39F6-A644-45BC-BA1B-F639D0E42522} = {5AFF5DC0-E611-4191-B74E-979309FB006D}
 	EndGlobalSection
 EndGlobal
