@@ -25,7 +25,7 @@
         public int DividerDigitsCount => Divider.ToString().Length;
 
         /// <summary> Успех? </summary>
-        public bool Success => Divider != BigInteger.One;
+        public bool Success => Divider != BigInteger.One && Divider != TargetNumber;
 
         /// <summary> Контекст остановки факторизации </summary>
         public EEndType EndType { get; set; }
