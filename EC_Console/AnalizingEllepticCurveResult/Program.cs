@@ -1,19 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Text.RegularExpressions;
-using EC_Console;
-using EdwardsCurves.AffineEdwardsCurves.Lenstra;
-using EdwardsCurves.ProjectiveEdwardsCurves.Lenstra;
-using LenstraAlgorithm.Dto;
-
-namespace AnalizingEllepticCurveResult
+﻿namespace AnalizingEllepticCurveResult
 {
-    /// <summary> Анализ результаты работы каждой ЭК </summary>
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Numerics;
+    using System.Text.RegularExpressions;
+    using EC_Console;
+    using EdwardsCurves.AffineEdwardsCurves.Lenstra;
+    using EdwardsCurves.ProjectiveEdwardsCurves.Lenstra;
+
+    /// <summary> Анализ результата работы каждой ЭК </summary>
     internal class Program
     {
+        private static readonly Dictionary<string, List<ParsedLenstraFactorizationResult>> Dictionary;
+
+        static Program()
+        {
+            Dictionary = new Dictionary<string, List<ParsedLenstraFactorizationResult>>();
+        }
+
         public static void Main(string[] args)
         {
             PrintSuccessedInfo();
@@ -24,21 +30,31 @@ namespace AnalizingEllepticCurveResult
         {
             var lenstraVersions = new[]
                 {nameof(ClassicLenstra), nameof(AffineEdwardsLenstra), nameof(ProjectiveEdwardsLenstra)};
-            
+
             foreach (var lenstraVersion in lenstraVersions)
             {
                 Console.WriteLine(lenstraVersion + ":");
                 var statisticOfVersion = GetStatistics(lenstraVersion).OrderBy(t => t.DividerDigitsCount).ToArray();
-                Console.WriteLine("DivDim\tMinMs\tAverMs\tMaxMs");
-                foreach (var time in statisticOfVersion)
+                var paddingLeft = 15;
+                Console.Write("DivDim".PadLeft(paddingLeft));
+                Console.Write("MinMs".PadLeft(paddingLeft));
+                Console.Write("AverMs".PadLeft(paddingLeft));
+                Console.Write("MaxMs".PadLeft(paddingLeft));
+                Console.WriteLine();
+                foreach (var time in statisticOfVersion.OrderBy(info => info.DividerDigitsCount))
                 {
-                    Console.WriteLine($"{time.DividerDigitsCount}\t{time.MinMs}\t{time.AverageMs}\t{time.MaxMs}");
+                    Console.Write($"{time.DividerDigitsCount}".PadLeft(paddingLeft));
+                    Console.Write($"{time.MinMs:F2}".PadLeft(paddingLeft));
+                    Console.Write($"{time.AverageMs:F2}".PadLeft(paddingLeft));
+                    Console.Write($"{time.MaxMs:F2}".PadLeft(paddingLeft));
+                    Console.WriteLine();
                 }
 
                 Console.WriteLine("Histogram of success timing:");
                 foreach (var time in statisticOfVersion)
                 {
-                    Console.WriteLine($"{time.DividerDigitsCount}:\t{string.Join("\t", time.Hist)}");
+                    Console.Write($"{time.DividerDigitsCount}:".PadLeft(paddingLeft));
+                    Console.WriteLine($"{string.Join("", time.Hist.Select(h => h.ToString().PadLeft(paddingLeft)))}");
                 }
 
                 Console.WriteLine();
@@ -63,6 +79,10 @@ namespace AnalizingEllepticCurveResult
                     foreach (var ms in lenstraMsResults)
                     {
                         var i = (int) Math.Floor((ms - minMs) / (maxMs - minMs) * 10);
+                        if (i == 10)
+                        {
+                            i--;
+                        }
                         hist[i]++;
                     }
 
@@ -89,10 +109,19 @@ namespace AnalizingEllepticCurveResult
                 var successedInfos = GetSuccessedInfos(lenstraVersion);
 
                 Console.WriteLine(lenstraVersion + ":");
-                Console.WriteLine("MinDivDim\tSuccess\tNonsuccess");
-                foreach (var successedInfo in successedInfos)
-                    Console.WriteLine(
-                        $"{successedInfo.MinDividerDigits}\t{successedInfo.SuccessedCount}\t{successedInfo.NotSuccessedCount}");
+                var paddingLeft = 15;
+                Console.Write("MinDivDim".PadLeft(paddingLeft));
+                Console.Write("Success".PadLeft(paddingLeft));
+                Console.Write("Nonsuccess".PadLeft(paddingLeft));
+                Console.WriteLine();
+                
+                foreach (var successedInfo in successedInfos.OrderBy(info => info.MinDividerDigits))
+                {
+                    Console.Write($"{successedInfo.MinDividerDigits}".PadLeft(paddingLeft));
+                    Console.Write($"{successedInfo.SuccessedCount}".PadLeft(paddingLeft));
+                    Console.Write($"{successedInfo.NotSuccessedCount}".PadLeft(paddingLeft));
+                    Console.WriteLine();
+                }
 
                 Console.WriteLine();
             }
@@ -122,15 +151,13 @@ namespace AnalizingEllepticCurveResult
             return successedInfos;
         }
 
-        private static readonly Dictionary<string, List<ParsedLenstraFactorizationResult>> Dictionary = new Dictionary<string, List<ParsedLenstraFactorizationResult>>();
-
         private static List<ParsedLenstraFactorizationResult> GetAllLenstraResults(string lenstraVersion)
         {
             if (Dictionary.ContainsKey(lenstraVersion))
             {
                 return Dictionary[lenstraVersion];
             }
-            
+
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             var dataDir = Path.GetFullPath(Path.Combine(baseDirectory, @"..\..\..\EllepticCurveResultGeneration\Data",
                 lenstraVersion));
