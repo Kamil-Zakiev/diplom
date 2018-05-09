@@ -83,6 +83,7 @@
                         {
                             i--;
                         }
+
                         hist[i]++;
                     }
 
@@ -114,7 +115,7 @@
                 Console.Write("Success".PadLeft(paddingLeft));
                 Console.Write("Nonsuccess".PadLeft(paddingLeft));
                 Console.WriteLine();
-                
+
                 foreach (var successedInfo in successedInfos.OrderBy(info => info.MinDividerDigits))
                 {
                     Console.Write($"{successedInfo.MinDividerDigits}".PadLeft(paddingLeft));
