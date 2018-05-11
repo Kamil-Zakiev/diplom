@@ -1,0 +1,3733 @@
+Код актуален на дату: 11.05.2018
+
+AnalizingEllepticCurveResult
+ParsedLenstraFactorizationResult.cs
+using System;
+using System.Numerics;
+
+namespace AnalizingEllepticCurveResult
+{
+    /// <summary> Результаты эллиптической кривой при попытке факторизации числа </summary>
+    public class ParsedLenstraFactorizationResult
+    {
+        /// <summary> Делитель </summary>
+        public BigInteger? Divider;
+
+        /// <summary> Факторизуемое число </summary>
+        public BigInteger TargetNumber;
+
+        /// <summary> Потрачено времени </summary>
+        public TimeSpan WastedTime;
+
+        /// <summary> Разрядность делителя факторизуемого числа </summary>
+        public int DividerDigitsCount;
+
+        /// <summary> Успех? </summary>
+        public bool Success => Divider.HasValue;
+    }
+}
+
+Program.cs
+namespace AnalizingEllepticCurveResult
+{
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Numerics;
+    using System.Text.RegularExpressions;
+    using EC_Console;
+    using EdwardsCurves.AffineEdwardsCurves.Lenstra;
+    using EdwardsCurves.ProjectiveEdwardsCurves.Lenstra;
+
+    /// <summary> Анализ результата работы каждой ЭК </summary>
+    internal class Program
+    {
+        private static readonly Dictionary<string, List<ParsedLenstraFactorizationResult>> Dictionary;
+
+        static Program()
+        {
+            Dictionary = new Dictionary<string, List<ParsedLenstraFactorizationResult>>();
+        }
+
+        public static void Main(string[] args)
+        {
+            PrintSuccessedInfo();
+            PrintStatistics();
+        }
+
+        private static void PrintStatistics()
+        {
+            var lenstraVersions = new[]
+                {nameof(ClassicLenstra), nameof(AffineEdwardsLenstra), nameof(ProjectiveEdwardsLenstra)};
+
+            foreach (var lenstraVersion in lenstraVersions)
+            {
+                Console.WriteLine(lenstraVersion + ":");
+                var statisticOfVersion = GetStatistics(lenstraVersion).OrderBy(t => t.DividerDigitsCount).ToArray();
+                var paddingLeft = 15;
+                Console.Write("DivDim".PadLeft(paddingLeft));
+                Console.Write("MinMs".PadLeft(paddingLeft));
+                Console.Write("AverMs".PadLeft(paddingLeft));
+                Console.Write("MaxMs".PadLeft(paddingLeft));
+                Console.WriteLine();
+                foreach (var time in statisticOfVersion.OrderBy(info => info.DividerDigitsCount))
+                {
+                    Console.Write($"{time.DividerDigitsCount}".PadLeft(paddingLeft));
+                    Console.Write($"{time.MinMs:F2}".PadLeft(paddingLeft));
+                    Console.Write($"{time.AverageMs:F2}".PadLeft(paddingLeft));
+                    Console.Write($"{time.MaxMs:F2}".PadLeft(paddingLeft));
+                    Console.WriteLine();
+                }
+
+                Console.WriteLine("Histogram of success timing:");
+                foreach (var time in statisticOfVersion)
+                {
+                    Console.Write($"{time.DividerDigitsCount}:".PadLeft(paddingLeft));
+                    Console.WriteLine($"{string.Join("", time.Hist.Select(h => h.ToString().PadLeft(paddingLeft)))}");
+                }
+
+                Console.WriteLine();
+            }
+        }
+
+        private static Statistic[] GetStatistics(string lenstraVersion)
+        {
+            var allLenstraResults = GetAllLenstraResults(lenstraVersion);
+            var statisticOfVersion = allLenstraResults
+                .Where(x => x.Success)
+                .GroupBy(r => r.DividerDigitsCount)
+                .Select(g =>
+                {
+                    var lenstraMsResults = g.Select(x => x.WastedTime.TotalMilliseconds).ToArray();
+
+                    var averageMs = lenstraMsResults.Average();
+                    var minMs = lenstraMsResults.Min();
+                    var maxMs = lenstraMsResults.Max();
+
+                    var hist = new int[10];
+                    foreach (var ms in lenstraMsResults)
+                    {
+                        var i = (int) Math.Floor((ms - minMs) / (maxMs - minMs) * 10);
+                        if (i == 10)
+                        {
+                            i--;
+                        }
+
+                        hist[i]++;
+                    }
+
+                    return new Statistic
+                    {
+                        DividerDigitsCount = g.Key,
+                        MinMs = minMs,
+                        AverageMs = averageMs,
+                        MaxMs = maxMs,
+                        Hist = hist
+                    };
+                })
+                .ToArray();
+            return statisticOfVersion;
+        }
+
+        private static void PrintSuccessedInfo()
+        {
+            var lenstraVersions = new[]
+                {nameof(ClassicLenstra), nameof(AffineEdwardsLenstra), nameof(ProjectiveEdwardsLenstra)};
+
+            foreach (var lenstraVersion in lenstraVersions)
+            {
+                var successedInfos = GetSuccessedInfos(lenstraVersion);
+
+                Console.WriteLine(lenstraVersion + ":");
+                var paddingLeft = 15;
+                Console.Write("MinDivDim".PadLeft(paddingLeft));
+                Console.Write("Success".PadLeft(paddingLeft));
+                Console.Write("Nonsuccess".PadLeft(paddingLeft));
+                Console.WriteLine();
+
+                foreach (var successedInfo in successedInfos.OrderBy(info => info.MinDividerDigits))
+                {
+                    Console.Write($"{successedInfo.MinDividerDigits}".PadLeft(paddingLeft));
+                    Console.Write($"{successedInfo.SuccessedCount}".PadLeft(paddingLeft));
+                    Console.Write($"{successedInfo.NotSuccessedCount}".PadLeft(paddingLeft));
+                    Console.WriteLine();
+                }
+
+                Console.WriteLine();
+            }
+        }
+
+        private static SuccessedInfo[] GetSuccessedInfos(string lenstraVersion)
+        {
+            var allLenstraResults = GetAllLenstraResults(lenstraVersion);
+
+            var successedInfos = allLenstraResults
+                .GroupBy(r => r.DividerDigitsCount)
+                .Select(g =>
+                {
+                    var lenstraResults = g.ToArray();
+                    var successedCount = lenstraResults.Count(lenstraResult => lenstraResult.Success);
+                    var notSuccessedCount = lenstraResults.Length - successedCount;
+
+                    return new SuccessedInfo
+                    {
+                        MinDividerDigits = g.Key,
+                        SuccessedCount = successedCount,
+                        NotSuccessedCount = notSuccessedCount
+                    };
+                })
+                .ToArray();
+
+            return successedInfos;
+        }
+
+        private static List<ParsedLenstraFactorizationResult> GetAllLenstraResults(string lenstraVersion)
+        {
+            if (Dictionary.ContainsKey(lenstraVersion))
+            {
+                return Dictionary[lenstraVersion];
+            }
+
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            var dataDir = Path.GetFullPath(Path.Combine(baseDirectory, @"..\..\..\EllepticCurveResultGeneration\Data",
+                lenstraVersion));
+
+            var numberRegex = new Regex(@"\d+");
+            var filesInfo = Directory.GetFiles(dataDir)
+                .Where(fileName => fileName.EndsWith(".txt"))
+                .Select(fileName =>
+                {
+                    var minDivStr = numberRegex.Match(fileName).Groups[0];
+                    return new
+                    {
+                        FileName = fileName,
+                        MinDividerDigits = Convert.ToInt32(minDivStr.Value)
+                    };
+                })
+                .ToArray();
+
+            var allLenstraResults = new List<ParsedLenstraFactorizationResult>();
+            foreach (var fileInfo in filesInfo)
+            {
+                var lenstraResults = File.ReadAllLines(fileInfo.FileName)
+                    .Select(row =>
+                    {
+                        var words = row.Split('|');
+                        var lenstraResult = new ParsedLenstraFactorizationResult
+                        {
+                            TargetNumber = BigInteger.Parse(words[0]),
+                            WastedTime = TimeSpan.FromTicks(Convert.ToInt64(words[2])),
+                            DividerDigitsCount = fileInfo.MinDividerDigits
+                        };
+
+                        var parsedDivider = BigInteger.Parse(words[1]);
+                        if (parsedDivider != BigInteger.One && parsedDivider != lenstraResult.TargetNumber)
+                        {
+                            lenstraResult.Divider = parsedDivider;
+                        }
+
+                        return lenstraResult;
+                    })
+                    .ToArray();
+
+                allLenstraResults.AddRange(lenstraResults);
+            }
+
+            Dictionary[lenstraVersion] = allLenstraResults;
+            return allLenstraResults;
+        }
+    }
+}
+
+Statistic.cs
+namespace AnalizingEllepticCurveResult
+{
+    public class Statistic
+    {
+        public int DividerDigitsCount { get; set; }
+        public double MinMs { get; set; }
+        public double AverageMs { get; set; }
+        public double MaxMs { get; set; }
+
+        public int[] Hist { get; set; }
+    }
+}
+
+SuccessedInfo.cs
+namespace AnalizingEllepticCurveResult
+{
+    public class SuccessedInfo
+    {
+        public int MinDividerDigits { get; set; }
+
+        public int SuccessedCount { get; set; }
+
+        public int NotSuccessedCount { get; set; }
+    }
+}
+
+
+
+ClassesAnalisys
+CurveClass.cs
+namespace ClassesAnalisys
+{
+    /// <summary> Класс эллиптической кривой </summary>
+    public class CurveClass
+    {
+        /// <summary> Номер класса </summary>
+        public int ClassNumber { get; set; }
+
+        /// <summary> Имя класса </summary>
+        public string ClassName => $"Class #{ClassNumber}";
+    }
+}
+
+CurveInfo.cs
+namespace ClassesAnalisys
+{
+    using System;
+    using Analisys.Classificators;
+    using Classificators;
+
+    /// <summary> Класс, инкапсулирующий информацию об одной эллиптической кривой </summary>
+    internal class CurveInfo : CurveBaseInfo
+    {
+        public CurveInfo(string row)
+        {
+            var words = row.Split('\t');
+            var i = 0;
+            DigitsCountOfFiledOrder = Convert.ToInt32(words[i++]);
+            ParameterA = Convert.ToInt32(words[i++]);
+            ParameterB = Convert.ToInt32(words[i++]);
+            FieldOrder = Convert.ToInt32(words[i++]);
+            PointsCount = Convert.ToInt32(words[i++]);
+            EdgeB = Convert.ToInt32(words[i]);
+        }
+
+        /// <summary> Количество разрядов в числе порядка поля </summary>
+        public int DigitsCountOfFiledOrder { get; }
+
+        /// <summary> Параметр кривой "а" </summary>
+        public int ParameterA { get; }
+
+        /// <summary> Параметр кривой "b" </summary>
+        public int ParameterB { get; }
+    }
+}
+
+Program.cs
+namespace ClassesAnalisys
+{
+    using System;
+    using System.IO;
+    using System.Linq;
+    using Analisys;
+    using Analisys.Classificators;
+    using Classificators;
+
+    /// <summary> Оценка классов ЭК в зависимости от размерности делителя </summary>
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            ResearchConstantsBasedClasses();
+            ResearchFieldOrderBasedClasses();
+        }
+
+        /// <summary> Исследование классов эллиптических кривых на основе их границы B относительно констант </summary>
+        private static void ResearchConstantsBasedClasses()
+        {
+            Console.WriteLine("ResearchConstantsBasedClasses:");
+            var constantsBasedClassificator = ClassificatorFactory.Create(new Func<CurveBaseInfo, bool>[]
+            {
+                info => info.EdgeB <= 100,
+                info => info.EdgeB > 100 && info.EdgeB <= 1000,
+                info => info.EdgeB > 1000 && info.EdgeB <= 10000,
+                info => info.EdgeB > 10000
+            });
+
+            DoResearch(constantsBasedClassificator);
+        }
+
+        /// <summary> Исследование классов эллиптических кривых на основе их границы B относительно размености поля </summary>
+        private static void ResearchFieldOrderBasedClasses()
+        {
+            Console.WriteLine("ResearchFieldOrderBasedClasses:");
+            var fieldOrderBasedClassificator = ClassificatorFactory.Create(new Func<CurveBaseInfo, bool>[]
+            {
+                info => info.EdgeB <= Math.Pow(info.FieldOrder, 0.25),
+                info => info.EdgeB > Math.Pow(info.FieldOrder, 0.25) && info.EdgeB <= Math.Pow(info.FieldOrder, 0.33),
+                info => info.EdgeB > Math.Pow(info.FieldOrder, 0.33) && info.EdgeB <= Math.Pow(info.FieldOrder, 0.5),
+                info => info.EdgeB > Math.Pow(info.FieldOrder, 0.5)
+            });
+
+            DoResearch(fieldOrderBasedClassificator);
+        }
+
+        private static void DoResearch(Classificator classificator)
+        {
+            var data = GetDataLines();
+
+            var curveInfos = GetCurvesInfos(data);
+            var classifiedCurveInfos = curveInfos.Select(curveInfo => new
+                {
+                    curveInfo,
+                    curveClass = classificator.Classify(curveInfo)
+                })
+                .ToArray();
+
+            var classesOfCurves = classifiedCurveInfos.GroupBy(info => info.curveInfo.DigitsCountOfFiledOrder)
+                .OrderBy(g => g.Key)
+                .Select(g =>
+                {
+                    var classesInfo = g
+                        .AsEnumerable()
+                        .GroupBy(cci => cci.curveClass.ClassNumber)
+                        .OrderBy(gr => gr.Key)
+                        .Select(gr => new
+                        {
+                            ClassNumber = gr.Key,
+                            Count = gr.Count()
+                        }).ToDictionary(x => x.ClassNumber, x => x.Count);
+
+                    return new
+                    {
+                        Dimension = g.Key,
+                        ClassesInfo = classesInfo
+                    };
+                })
+                .ToArray();
+
+            var classesNumber = classesOfCurves.Max(x => x.ClassesInfo.Count);
+            var paddingLeft = 8;
+            Console.Write("Dim".PadLeft(paddingLeft, ' '));
+            for (var i = 0; i < classesNumber; i++)
+            {
+                Console.Write($"#{i + 1}".PadLeft(paddingLeft, ' '));
+            }
+
+            Console.WriteLine();
+
+            foreach (var classesOfCurve in classesOfCurves)
+            {
+                Console.Write($"{classesOfCurve.Dimension}".PadLeft(paddingLeft, ' '));
+                for (var i = 0; i < classesNumber; i++)
+                {
+                    if (classesOfCurve.ClassesInfo.ContainsKey(i + 1))
+                    {
+                        Console.Write($"{classesOfCurve.ClassesInfo[i + 1]}".PadLeft(paddingLeft, ' '));
+                    }
+                    else
+                    {
+                        Console.Write("0".PadLeft(paddingLeft, ' '));
+                    }
+                }
+
+                Console.WriteLine();
+            }
+        }
+
+        private static CurveInfo[] GetCurvesInfos(string[] data)
+        {
+            return data.Select(row => new CurveInfo(row)).ToArray();
+        }
+
+        private static string[] GetDataLines()
+        {
+            const string fileName =
+                @"E:\Stash\diplom\EC_Console\EC_Console\bin\Debug\curves with its B and points count.txt";
+            return File.ReadAllLines(fileName).Skip(1).ToArray();
+        }
+    }
+}
+
+Classificators\ClassificatorFactory.cs
+namespace ClassesAnalisys.Classificators
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Analisys.Classificators;
+    using ClassesAnalisys;
+
+    public static class ClassificatorFactory
+    {
+        public static Classificator Create(IReadOnlyList<Func<CurveBaseInfo, bool>> conditions)
+        {
+            conditions = conditions.Reverse().ToArray();
+            ClassifyingItem chain = null;
+            for (var i = 0; i < conditions.Count; i++)
+            {
+                var curveClass = new CurveClass() {ClassNumber = conditions.Count - i};
+                chain = new ClassifyingItem(chain, conditions[i], curveClass);
+            }
+
+            return new Classificator(chain);
+        }
+    }
+}
+
+Classificators\ClassifyingItem.cs
+namespace ClassesAnalisys.Classificators
+{
+    using System;
+    using Analisys.Classificators;
+    using ClassesAnalisys;
+
+    public class ClassifyingItem
+    {
+        private readonly ClassifyingItem _next;
+        private readonly CurveClass _curveClass;
+
+        public ClassifyingItem(ClassifyingItem next, Func<CurveBaseInfo, bool> classifyFunc, CurveClass curveClass)
+        {
+            _next = next;
+            _classifyFunc = classifyFunc;
+            _curveClass = curveClass;
+        }
+
+        private readonly Func<CurveBaseInfo, bool> _classifyFunc;
+
+        public CurveClass Classify(CurveBaseInfo curveBaseInfo)
+        {
+            if (_classifyFunc(curveBaseInfo))
+            {
+                return _curveClass;
+            }
+
+            return _next.Classify(curveBaseInfo);
+        }
+    }
+}
+
+Classificators\ConstantsBasedClassificator.cs
+namespace ClassesAnalisys.Classificators
+{
+    using Analisys.Classificators;
+    using ClassesAnalisys;
+
+    public class Classificator
+    {
+        public Classificator(ClassifyingItem classifyingItem)
+        {
+            ClassifyingItem = classifyingItem;
+        }
+
+        private ClassifyingItem ClassifyingItem { get; }
+
+        public CurveClass Classify(CurveBaseInfo curveInfo)
+        {
+            var result = new CurveClass();
+            if (curveInfo.EdgeB <= 100)
+            {
+                result.ClassNumber = 1;
+            }
+            else if (curveInfo.EdgeB <= 1000)
+            {
+                result.ClassNumber = 2;
+            }
+            else if (curveInfo.EdgeB <= 10000)
+            {
+                result.ClassNumber = 3;
+            }
+            else
+            {
+                result.ClassNumber = 4;
+            }
+
+            return ClassifyingItem.Classify(curveInfo);
+        }
+    }
+}
+
+Classificators\CurveBaseInfo.cs
+namespace ClassesAnalisys.Classificators
+{
+    public class CurveBaseInfo
+    {
+        /// <summary> Порядок конечного поля </summary>
+        public int FieldOrder { get; protected set; }
+
+        /// <summary> Количество точек эллиптической кривой </summary>
+        public int PointsCount { get; protected set;}
+
+        /// <summary> Граница B </summary>
+        public int EdgeB { get; protected set;}
+    }
+}
+
+Classificators\FieldOrderBasedClassificator.cs
+namespace Analisys.Classificators
+{
+    using System;
+    using ClassesAnalisys;
+    using ClassesAnalisys.Classificators;
+
+    public class FieldOrderBasedClassificator//: IClassificator
+    {
+        public CurveClass Classify(CurveBaseInfo curveInfo)
+        {
+            var result = new CurveClass();
+            
+            if (curveInfo.EdgeB <= Math.Pow(curveInfo.FieldOrder, 0.25))
+            {
+                result.ClassNumber = 1;
+            }
+            else if (curveInfo.EdgeB <= Math.Pow(curveInfo.FieldOrder, 0.33))
+            {
+                result.ClassNumber = 2;
+            }
+            else if (curveInfo.EdgeB <= Math.Pow(curveInfo.FieldOrder, 0.5))
+            {
+                result.ClassNumber = 3;
+            }
+            else
+            {
+                result.ClassNumber = 4;
+            }
+            
+            return result;
+        }
+    }
+}
+
+
+
+ClassesDataGeneration
+Program.cs
+namespace ClassesDataGeneration
+{
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Numerics;
+    using EC_Console;
+    using Utils;
+
+    internal class Program
+    {
+        public const string CurvesWithItsBAndPointsCountTxt = "curves with its B and points count.txt";
+
+        public static void Main(string[] args)
+        {
+            var random = new Random();
+            var listOfEc = new List<EllepticCurve>();
+            const int curvesCountPerDim = 100;
+            for (var pDim = 2; pDim < 10; pDim++)
+            {
+                var dimen = BigInteger.Pow(10, pDim);
+                for (var i = 0; i < curvesCountPerDim; i++)
+                {
+                    dimen = BigIntegerExtensions.NextPrimaryMillerRabin(dimen);
+                    var a = BigIntegerExtensions.GetNextRandom(random, dimen);
+                    var b = BigIntegerExtensions.GetNextRandom(random, dimen);
+                    var ec = new EllepticCurve(a, b, dimen);
+                    listOfEc.Add(ec);
+                }
+            }
+
+            foreach (var curve in listOfEc)
+            {
+                var pointsCount = curve.CountPoints;
+                var b1 = curve.LenstraEdges.B1;
+
+                var dim = curve.p.ToString().Length;
+                var info = $"{dim}\t{curve.a}\t{curve.b}\t{curve.p}\t{pointsCount}\t{b1}\t\r\n";
+                File.AppendAllText(CurvesWithItsBAndPointsCountTxt, info);
+            }
+        }
+    }
+}
+
+
+
+CustomFactorMethodAnalisys
+Program.cs
+namespace CustomFactorMethodAnalisys
+{
+    using System;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
+    using System.Numerics;
+    using System.Text.RegularExpressions;
+    using EdwardsCurves.ProjectiveEdwardsCurves.Lenstra;
+    using LenstraAlgorithm;
+
+    /// <summary>
+    ///     Анализ результатов среднего времени работы реализованного алгоритма быстрой факторизации на основе ЭК
+    /// </summary>
+    internal class Program
+    {
+        public static string SemiprimesResourceDir = @"E:\Stash\diplom\EC_Console\SemiPrimeNumbersGenerator\Resources";
+
+        public static void Main(string[] args)
+        {
+            /*
+             Суть реализованного алгоритма заключается в следующем: 
+             выбирается количество эллиптических кривых, равное количеству процессоров на машине, 
+             и по этим кривым параллельно запускается варианты алгоритма Ленстры. 
+             Как только один из вариантов алгоритма закончил работу (неважно, успешно или неуспешно), 
+             остальные варианты алгоритма прекращают своё выполнение. 
+             */
+
+            const int semiprimesPerDim = 20;
+            const int startDim = 4;
+            const int endDim = 20;
+            var numberRegex = new Regex(@"\d+");
+            var semiprimesFiles = Directory.GetFiles(SemiprimesResourceDir)
+                .Select(fileName =>
+                {
+                    var minDivStr = numberRegex.Match(fileName).Groups[0];
+                    return new
+                    {
+                        FileName = fileName,
+                        MinDividerDigits = Convert.ToInt32(minDivStr.Value)
+                    };
+                })
+                .Where(dto => startDim <= dto.MinDividerDigits && dto.MinDividerDigits <= endDim)
+                .OrderBy(dto => dto.MinDividerDigits)
+                .ToList();
+
+            var numbersPackages = semiprimesFiles.Select(fileInfo => new
+                {
+                    Numbers = File.ReadAllLines(fileInfo.FileName).Take(semiprimesPerDim).Select(BigInteger.Parse)
+                        .ToArray(),
+                    MinDividerSize = fileInfo.MinDividerDigits
+                })
+                .ToArray();
+
+            Console.WriteLine("dim\tfast\tstd");
+            foreach (var numbersPackage in numbersPackages)
+            {
+                var numbers = numbersPackage.Numbers;
+                var fastTimes = numbers.Select(GetMsOfFastAlg).Where(x => x.success).Select(x => x.ms).ToArray();
+                var stndTimes = numbers.Select(GetMsOfStandartAlg).Where(x => x.success).Select(x => x.ms).ToArray();
+
+                Console.Write(numbersPackage.MinDividerSize + "\t");
+                Console.Write($"{fastTimes.Average():F2}\t{stndTimes.Average():F2}\n");
+            }
+        }
+
+        private static (bool success, double ms) GetMsOfFastAlg(BigInteger n)
+        {
+            var multithreadLenstra = new MultithreadLenstra<ProjectiveEdwardsLenstra>();
+
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            var divider = multithreadLenstra.LenstraMultiThreadFastResult(n, Environment.ProcessorCount);
+            stopWatch.Stop();
+
+            return (divider.HasValue, stopWatch.ElapsedMilliseconds);
+        }
+
+        private static (bool success, double ms) GetMsOfStandartAlg(BigInteger n)
+        {
+            var projectiveEdwardsLenstra = new ProjectiveEdwardsLenstra();
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            var result = projectiveEdwardsLenstra.GetDivider(n, new Random());
+            stopWatch.Stop();
+
+            return (result.Success, stopWatch.ElapsedMilliseconds);
+        }
+    }
+}
+
+
+
+EC_Console
+Program.cs
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Numerics;
+using System.Text;
+using Utils;
+
+namespace EC_Console
+{
+    public class Program
+    {
+        public const string CurvesWithItsBAndPointsCountTxt = "curves with its B and points count.txt";
+
+        public class DimensionResults
+        {
+            public int Dimension;
+            public List<EllepticCurve> FirstClass;
+            public List<EllepticCurve> SecondClass;
+            public List<EllepticCurve> ThirdClass;
+            public List<EllepticCurve> ForthClass;
+        }
+
+        static void Main(string[] args)
+        {
+            #region Практическая часть диплома. Эксперимент
+            
+/*
+            var results = new List<FactorizeTimeResult>();
+            foreach (var path in Directory.GetFiles("TwoPrimesMultiple"))
+            {
+                results = MultithreadLenstra.GetMinTimes(path, threadsCount: 100);
+                var group = results
+                    .Where(x => x.Time.HasValue)
+                    .GroupBy(x => x.DividerDimension,
+                        (dim, res) =>
+                        {
+                            var averMin = res.Average(x => x.Time.Value);
+                            var resultStr = dim + " " + averMin + "\t\r\n";
+                            File.AppendAllText("ExperimentResultsMinTime.txt", resultStr);
+                            return new FactorizeTimeResult()
+                            {
+                                DividerDimension = dim,
+                                Time = averMin
+                            };
+                        }).ToList();
+            }
+*/
+            //факторизация
+                /*
+                var results = new List<LenstraFactorizationResult>();
+                foreach (var path in Directory.GetFiles("TwoPrimesMultiple"))
+                {
+                    results = (MultithreadLenstra.UseThreadsParallelism(path, threadsCount: 100));
+
+                    //обработка результатов
+                    var groupResult = results
+                        .GroupBy(x => x.TargetNumberDigitsCount,
+                            (key, resultsOfGroup) =>
+                            {
+                                //размерность факторизуемого числа
+                                var targetDim = key;
+
+                                var r = resultsOfGroup.ToList();
+
+                                //количество успешных кривых
+                                var successed = r.Count(x => x.Success);
+
+                                //кол-во неуспешных кривых
+                                var failed = r.Count(x => !x.Success);
+
+                                //среднее время успеха
+                                var averageSecondsOfSuccess = r.Where(x => x.Success)
+                                    .Average(z => z.WastedTime.TotalSeconds);
+
+                                //минимальное время успеха
+                                var minSeconds = r.Where(x => x.Success).Min(z => z.WastedTime.TotalSeconds);
+
+                                //максимальное время успеха
+                                var maxSeconds = r.Where(x => x.Success).Max(z => z.WastedTime.TotalSeconds);
+
+                                //распределение времени успеха на 10 столибиков гистограммы
+                                var hist = new int[10];
+                                r.Where(x => x.Success).Select(x => x.WastedTime.TotalSeconds).OrderBy(x => x).ToList()
+                                    .ForEach(time =>
+                                    {
+                                        var i = (int)(time / maxSeconds * 9);
+                                        hist[i]++;
+                                    });
+
+                                var result = new
+                                {
+                                    targetDim = targetDim,
+                                    successed = successed,
+                                    failed = failed,
+                                    averageSecondsOfSuccess = averageSecondsOfSuccess,
+                                    minSeconds = minSeconds,
+                                    maxSeconds = maxSeconds,
+                                    hist = hist
+                                };
+                                string resultString = string.Format("{0} {1} {2} {3} {4} {5} {6}\t\r\n",
+                                    targetDim, successed, failed, averageSecondsOfSuccess, minSeconds, maxSeconds,
+                                    string.Join(" ", hist));
+                                File.AppendAllText("ExperimentResults.txt", resultString);
+                                return result;
+                            }).ToList();
+                }
+                */
+                #endregion
+            }
+        }
+}
+
+Test.cs
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
+using Utils;
+
+namespace EC_Console
+{
+    public static class Test
+    {
+        /// <summary> Разложение </summary>
+        public static void Factorize()
+        {
+            BigInteger n = BigInteger.Parse("123456794568413263") * BigInteger.Parse("256783548123456833");
+            var pRs = BigIntegerExtensions.Factorize<ClassicLenstra>(n).OrderBy(x => x.Key);
+            var nRecover = BigInteger.One;
+            foreach (var pR in pRs)
+            {
+                nRecover *= BigInteger.Pow(pR.Key, pR.Value);
+            }
+            var eq = n == nRecover;
+        }
+
+        /// <summary> Символ Лежандра </summary>
+        public static void LegendreSymbol()
+        {
+            int a = 27;
+            int p = 23;
+            Console.WriteLine("a = " + a);
+            Console.WriteLine("p = " + p);
+            Console.WriteLine("(a/p) = {0}", BigIntegerExtensions.Jacobi(a, p)); ;
+        }
+
+        /// <summary> Рандомное число </summary>
+        public static void Random()
+        {
+            var random = new Random();
+            BigInteger n = BigInteger.Parse("123456794568413263") * BigInteger.Parse("256783548123456833");
+
+            var listOfRandoms = new List<BigInteger>();
+            for (int i = 0; i < 1000000; i++)
+            {
+                var bi = BigIntegerExtensions.GetNextRandom(random, n);
+                listOfRandoms.Add(bi);
+            }
+            var count = listOfRandoms.Distinct().Count();
+        }
+
+        /// <summary> Количество точек </summary>
+        public static void CountPoints()
+        {
+            BigInteger n = BigInteger.Parse("123456789");
+            var ec = new EllepticCurve(5, -5, n);
+            var count = ec.CountPoints;
+        }
+
+
+
+    }
+}
+
+EllepticCurve\EllepticCurve.cs
+using System;
+using System.Linq;
+using System.Numerics;
+using System.Threading.Tasks;
+using LenstraAlgorithm;
+using Utils;
+
+namespace EC_Console
+{
+    using LenstraAlgorithm.Dto;
+
+    /// <summary> 
+    ///Эллиптическая кривая y^2 = x^3 + a * x + b над полем F_q, при характеристике поля p>=3 
+    ///</summary>
+    public class EllepticCurve: IEllepticCurve
+    {
+        /// <summary> Генератор </summary>
+        public PointOfEC Basis;
+
+        /// <summary> a принадлежит множеству F_q</summary>
+        public BigInteger a;
+
+        /// <summary> b принадлежит множеству F_q</summary>
+        public BigInteger b;
+
+        /// <summary> 
+        /// Характеристика конечного поля F_q 
+        /// ВНИМАНИЕ: p >= 3
+        ///</summary>
+        public BigInteger p;
+
+        /// <summary> конечное поле F_q характеристики p, где q = p ^ k </summary>
+        private BigInteger k;
+
+        /// <summary> 
+        ///Дискриминант эллиптической кривой 
+        /// Если != 0, то ЭК неособая, то есть у нее нет кратных корней 
+        ///</summary>
+        public BigInteger Delta
+        {
+            get
+            {
+                return -16 * (4 * a * a * a + 27 * b * b);
+            }
+        }
+
+        /// <summary>
+        /// y^2 = x^3 + a * x + b 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="p"></param>
+        public EllepticCurve(BigInteger a, BigInteger b, BigInteger p)
+        {
+            this.a = a;
+            this.b = b;
+            //TODO: проверять ли на простоту число р?
+            this.p = p;
+
+            //this.Basis = CreateBasis();
+        }
+
+        private long tenExp = 1000000000000000000;
+
+        public void CreateBasis()
+        {
+            BigInteger x = 0;
+            var y = Math.Sqrt((double)ExtraBigIntegerExtensions.Mod(x * x * x + a * x + b, p));
+            while (x < p && ((long)(y * tenExp) % tenExp != 0))
+            {
+                x++;
+                y = Math.Sqrt((double)ExtraBigIntegerExtensions.Mod(x * x * x + a * x + b, p));
+            }
+            Basis = CreatePoint(x, (BigInteger)y);
+        }
+
+        /// <summary> Содержит ли ЭК точку? </summary>
+        /// <param name="X">координата Х</param>
+        /// <param name="Y">координата Y</param>
+        /// <returns></returns>
+        public bool ContainsPoint(BigInteger X, BigInteger Y)
+        {
+            return ExtraBigIntegerExtensions.Mod(Y * Y, p) == ExtraBigIntegerExtensions.Mod(X * X * X + a * X + b, p);
+        }
+
+        public PointOfEC CreatePoint(BigInteger X, BigInteger Y)
+        {
+            //проверим принадлежность точки (x,y) эллиптической кривой 
+            if (!ContainsPoint(X, Y))
+                throw new Exception(
+                    string.Format("Точка ({0},{1}) не принадлежит кривой y^2 = x^3 + {2} * x + {3}",
+                        X, Y, a, b));
+
+            return new PointOfEC()
+            {
+                EllepticCurve = this,
+                X = X,
+                Y = Y,
+                IsInfinity = false
+            };
+        }
+
+        /// <summary> Сумма двух точек эллиптической кривой </summary>
+        /// <param name="point1"> Первая точка</param>
+        /// <param name="point2"> Вторая точка</param>
+        public PointOfEC Sum(PointOfEC point1, PointOfEC point2)
+        {
+            if (point1.Equals(point2.Invariant()))
+                return new PointOfEC()
+                {
+                    EllepticCurve = this,
+                    IsInfinity = true
+                };
+
+            if (point1.IsInfinity)
+                return point2;
+            if (point2.IsInfinity)
+                return point1;
+
+            var lamdZnam = point2.X - point1.X >= BigInteger.Zero ? point2.X - point1.X : point2.X - point1.X + p;
+            if (lamdZnam != 0 && BigInteger.GreatestCommonDivisor(lamdZnam, p) > 1)
+                throw new GcdFoundException(BigInteger.GreatestCommonDivisor(lamdZnam, p));
+
+            point1.X = point1.X % p;
+            point2.X = point2.X % p;
+            point1.Y = point1.Y % p;
+            point2.Y = point2.Y % p;
+
+            BigInteger lambda;
+            if (!point1.Equals(point2))
+                lambda = BigInteger.Multiply(point2.Y - point1.Y, ExtraBigIntegerExtensions.Inverse(point2.X - point1.X, p));
+            else
+                lambda = (3 * point1.X * point1.X + a) * ExtraBigIntegerExtensions.Inverse(2 * point2.Y, p);
+            lambda = lambda % p;
+
+            var x = lambda * lambda - point1.X - point2.X;
+            var y = lambda * (point1.X - x) - point1.Y;
+
+            var result = new PointOfEC()
+            {
+                EllepticCurve = this,
+                X = x % p,
+                Y = y % p
+            };
+
+            return new PointOfEC()
+            {
+                //указать явно
+                //IsInfinity = false,
+                EllepticCurve = this,
+                X = result.X >= BigInteger.Zero ? result.X : result.X + p,
+                Y = result.Y >= BigInteger.Zero ? result.Y : result.Y + p
+            };
+        }
+
+        public PointOfEC Mult(BigInteger k, PointOfEC p)
+        {
+            if (k.IsZero)
+                throw new Exception("Попытка умножить на 0");
+
+            PointOfEC b = p;
+            PointOfEC q = new PointOfEC()
+            {
+                IsInfinity = true
+            };
+
+            while (!k.IsZero)
+            {
+                if (k % 2 == 1)
+                    q = Sum(q, b);
+                b = Sum(b, b);
+                k /= 2;
+            }
+            return q;
+        }
+
+        private BigInteger _pointsCount;
+
+        /// <summary> 
+        /// Количество точек ЭК
+        /// символ лежандра
+        /// </summary> 
+        public BigInteger CountPoints
+        {
+            get
+            {
+                if (_pointsCount != BigInteger.Zero)
+                    return _pointsCount;
+
+                var pLong = (long)p;
+                var tasks = new Task<int>[Environment.ProcessorCount];
+                var step = pLong / (Environment.ProcessorCount-1);
+                for (int i = 0; i < tasks.Length; i++)
+                {
+                    long start = i * step;
+                    long end = start + step;
+                    tasks[i] = Task.Factory.StartNew(() => countPointInner(start, end));
+                }
+                Task.WaitAll(tasks);
+
+                _pointsCount = tasks.Sum(x => x.Result) + 1;
+                return _pointsCount;
+            }
+        }
+
+        private int countPointInner(long start, long end)
+        {
+            var count = 0;
+            var pLong = (long)p;
+
+            if (end >= pLong)
+                end = pLong;
+            for (long x = start; x < end; x++)
+            {
+                var z = (long)ExtraBigIntegerExtensions.Mod(x * x * x + a * x + b, p);
+                if (z == 0)
+                    count++;
+                else
+                {
+                    var legendreSymbol = BigIntegerExtensions.jacobi(z, pLong);
+                    if (legendreSymbol == 1)
+                        count += 2;
+                }
+            }
+
+            return count;
+        }
+
+        public PointOfEC LenstraStartingPoint { get; set; }
+
+        private LenstraEdges _lenstraEdges;
+
+        /// <summary> Границы метода Ленстры </summary>
+        public LenstraEdges LenstraEdges
+        {
+            get
+            {
+                if (_lenstraEdges != null)
+                    return _lenstraEdges;
+
+                var pointsCount = this.CountPoints;
+                //разложение числа pointsCount
+                var pRs = BigIntegerExtensions.Factorize<ClassicLenstra>(pointsCount).OrderBy(x => x.Key);
+                if (pRs.Count() == 1)
+                {
+                    _lenstraEdges = new LenstraEdges()
+                    {
+                        B1 = BigInteger.Pow(pRs.First().Key, pRs.First().Value),
+                        B2 = 1
+                    };
+                    
+                    return _lenstraEdges;
+                }
+                var b1 = pRs.Max(x => BigInteger.Pow(x.Key, x.Value));
+                _lenstraEdges = new LenstraEdges()
+                {
+                    B1 = b1,
+                    B2 = 1
+                };
+                return _lenstraEdges;
+            }
+        }
+
+        public BigInteger FieldOrder => p;
+    }
+}
+
+EllepticCurve\PointOfEC.cs
+using System.Numerics;
+
+namespace EC_Console
+{
+    /// <summary> Точка эллиптической кривой y^2 = x^3 + a * x + b, при характеристике поля p>=3  </summary>
+    public class PointOfEC
+    {
+        /// <summary>
+        /// Координата по оси Х. Всегда в пределах [0, EllepticCurve.p)
+        /// </summary>
+        private BigInteger _x;
+
+        /// <summary>
+        /// Координата по оси Y. Всегда в пределах [0, EllepticCurve.p) 
+        /// </summary>
+        private BigInteger _y;
+
+        public BigInteger X
+        {
+            get { return _x; }
+            set
+            {
+                if (value.Sign < 0)
+                    _x = value % EllepticCurve.p + EllepticCurve.p;
+                else
+                {
+                    _x = value % EllepticCurve.p;
+                }
+            }
+        }
+
+        public BigInteger Y
+        {
+            get { return _y; }
+            set
+            {
+                if (value.Sign < 0)
+                    _y = value % EllepticCurve.p + EllepticCurve.p;
+                else
+                {
+                    _y = value % EllepticCurve.p;
+                }
+            }
+        }
+
+        /// <summary> Эллиптическая кривая, которой принадлежит эта точка </summary>
+        public EllepticCurve EllepticCurve { get; set; }
+
+        /// <summary> Является ли точка ЭК точкой "в бесконечности"  </summary>
+        public bool IsInfinity;
+
+        /// <summary>
+        /// Получить обратную точку
+        /// Точка + Обратная точка = Точка "в бесконечности"
+        /// </summary>
+        public PointOfEC Invariant()
+        {
+            return new PointOfEC()
+            {
+                EllepticCurve = this.EllepticCurve,
+                X = X,
+                Y = -1 * Y
+            };
+        }
+
+        public PointOfEC(BigInteger x, BigInteger y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        public override string ToString()
+        {
+            if (IsInfinity)
+                return "Бесконечно удаленная точка";
+            return string.Format("({0},{1})", X, Y);
+        }
+        
+        /// <summary> Сравнение на равенство двух точек </summary>
+        public bool Equals(PointOfEC point)
+        {
+            return this == point || this.IsInfinity && point.IsInfinity || X == point.X && Y == point.Y;
+        }
+
+        public PointOfEC()
+        {
+        }
+
+        public PointOfEC(PointOfEC p)
+        {
+            EllepticCurve = p.EllepticCurve;
+            X = p.X;
+            Y = p.Y;
+            IsInfinity = p.IsInfinity;
+        }
+    }
+}
+
+Lenstra\ClassicLenstra.cs
+using System;
+using System.Collections.Generic;
+using System.Numerics;
+using System.Threading;
+using System.Threading.Tasks;
+using LenstraAlgorithm;
+using Utils;
+
+namespace EC_Console
+{
+    using LenstraAlgorithm.Dto;
+
+    public class ClassicLenstra : ILenstra
+    {
+        public BigInteger B1 = BigInteger.Parse("100000");
+
+        /// <summary>  Возвращает объект LenstraFactorizationResult </summary>
+        /// <param name="n">Число, у которого требуется найти делитель</param>
+        public LenstraFactorizationResult GetDivider(BigInteger n, Random random)
+        {
+            var startTime = DateTime.Now;
+            BigInteger g, x, y, a, b;
+            int k = 0;
+            do
+            {
+                x = BigIntegerExtensions.GetNextRandom(random, n);
+                y = BigIntegerExtensions.GetNextRandom(random, n);
+                a = BigIntegerExtensions.GetNextRandom(random, n);
+                k++;
+
+                b = ExtraBigIntegerExtensions.Mod(y * y - x * x * x - a * x, n);
+                g = BigInteger.GreatestCommonDivisor(n, 4 * a * a * a + 27 * b * b);
+            } while (g == n);
+
+            //убираем влияние выбора рандомного числа на время работы алгоритма
+            //startTime = startTime + new TimeSpan(0, 0, 0, k*3);
+
+            EllepticCurve ec = null;
+            try
+            {
+                if (g != 1)
+                    throw new GcdFoundException(g);
+                ec = new EllepticCurve(a, b, n);
+                var p0 = new PointOfEC
+                {
+                    EllepticCurve = ec,
+                    X = x,
+                    Y = y
+                };
+                ec.LenstraStartingPoint = p0;
+
+                var P = new PointOfEC(p0);
+
+                BigInteger p = 2;
+                while (p < B1)
+                {
+                    var pr = p;
+                    while (pr < B1)
+                    {
+                        P = ec.Mult(p, P);
+                        pr *= p;
+                    }
+                    p = BigIntegerExtensions.NextPrimaryMillerRabin(p);
+                }
+            }
+            catch (GcdFoundException exc)
+            {
+                Console.WriteLine("Поток {0} молодец: {1} = {2} * {3}", 
+                    Task.CurrentId, n, exc.GreatestCommonDivisor, n / exc.GreatestCommonDivisor);
+
+                return new LenstraFactorizationResult
+                {
+                    EllepticCurve = ec,
+                    TargetNumber = n,
+                    Divider = exc.GreatestCommonDivisor,
+                    WastedTime = DateTime.Now - startTime
+                };
+            }
+
+            return new LenstraFactorizationResult
+            {
+                EllepticCurve = ec,
+                TargetNumber = n,
+                WastedTime = DateTime.Now - startTime
+            };
+        }
+
+
+        /// <summary>  
+        /// Возвращает объект LenstraFactorizationResult, 
+        /// если находится какое-то число, то все осатльные потоки прекращаются 
+        /// </summary>
+        /// <param name="n">Число, у которого требуется найти делитель</param>
+        /// <param name="token">Токен отмены</param>
+        public LenstraFactorizationResult GetDividerWithCancel(BigInteger n, Random random, CancellationToken token)
+        {
+            var startTime = DateTime.Now;
+            BigInteger g, x, y, a, b;
+            int k = 0;
+            do
+            {
+                x = BigIntegerExtensions.GetNextRandom(random, n);
+                y = BigIntegerExtensions.GetNextRandom(random, n);
+                a = BigIntegerExtensions.GetNextRandom(random, n);
+                k++;
+
+                b = ExtraBigIntegerExtensions.Mod(y * y - x * x * x - a * x, n);
+                g = BigInteger.GreatestCommonDivisor(n, 4 * a * a * a + 27 * b * b);
+            } while (g == n);
+
+            EllepticCurve ec = null;
+            try
+            {
+                if (g != 1)
+                    throw new GcdFoundException(g);
+                ec = new EllepticCurve(a, b, n);
+                var p0 = new PointOfEC
+                {
+                    EllepticCurve = ec,
+                    X = x,
+                    Y = y
+                };
+                ec.LenstraStartingPoint = p0;
+
+                var P = new PointOfEC(p0);
+
+                BigInteger p = 2;
+                while (p < B1 && !token.IsCancellationRequested)
+                {
+                    var pr = p;
+                    while (pr < B1)
+                    {
+                        P = ec.Mult(p, P);
+                        pr *= p;
+                    }
+                    p = BigIntegerExtensions.NextPrimaryMillerRabin(p);
+                }
+            }
+            catch (GcdFoundException exc)
+            {
+                Console.WriteLine("Поток {0} молодец: {1} = {2} * {3}", 
+                    Task.CurrentId, n, exc.GreatestCommonDivisor, n / exc.GreatestCommonDivisor);
+
+                return new LenstraFactorizationResult
+                {
+                    EllepticCurve = ec,
+                    TargetNumber = n,
+                    Divider = exc.GreatestCommonDivisor,
+                    WastedTime = DateTime.Now - startTime
+                };
+            }
+
+            if (token.IsCancellationRequested)
+                Console.WriteLine("Поток {0} остановлен", Task.CurrentId);
+            else
+                Console.WriteLine("Поток {0} не смог", Task.CurrentId);
+
+ 
+            return new LenstraFactorizationResult
+            {
+                EllepticCurve = ec,
+                TargetNumber = n,
+                WastedTime = DateTime.Now - startTime
+            };
+        }
+
+
+    }
+}
+
+
+
+EdwardsCurves
+IEdwardsCurve.cs
+namespace EdwardsCurves
+{
+    using System.Numerics;
+    using LenstraAlgorithm;
+
+    /// <summary> Кривая Эдвардса </summary>
+    public interface IEdwardsCurve : IEllepticCurve
+    {
+        /// <summary> Параметр d кривой Эдвардса </summary>
+        BigInteger ParameterD { get; }
+    }
+}
+
+PointsFactory.cs
+namespace EdwardsCurves
+{
+    using System;
+    using System.Numerics;
+    using AffineEdwardsCurves;
+    using ProjectiveEdwardsCurves;
+
+    /// <summary> Фабрика точек, создающая точки на кривой с проверкой принадлежности точки к кривой </summary>
+    public class PointsFactory
+    {
+        public PointsFactory(IEdwardsCurve projectiveEdwardsCurve)
+        {
+            EdwardsCurve = projectiveEdwardsCurve;
+        }
+
+        public IEdwardsCurve EdwardsCurve { get; }
+
+        public ProjectiveEdwardsCurvePoint CreatePoint(BigInteger parameterX, BigInteger parameterY,
+            BigInteger parameterZ)
+        {
+            CheckPointOnCurve(parameterX, parameterY, parameterZ);
+
+            return new ProjectiveEdwardsCurvePoint(parameterX, parameterY, parameterZ, EdwardsCurve);
+        }
+
+        public AffineEdwardsCurvePoint CreatePoint(BigInteger parameterX, BigInteger parameterY)
+        {
+            CheckPointOnCurve(parameterX, parameterY);
+
+            return new AffineEdwardsCurvePoint(parameterX, parameterY, EdwardsCurve);
+        }
+
+        private void CheckPointOnCurve(BigInteger x, BigInteger y)
+        {
+            var x2 = x * x;
+            var y2 = y * y;
+            var left = x2 + y2;
+            var right = 1 + EdwardsCurve.ParameterD * x2 * y2;
+
+            var diff = left - right;
+            if (diff % EdwardsCurve.FieldOrder == 0)
+            {
+                return;
+            }
+
+            throw new InvalidOperationException("Точка не принадлежит кривой");
+        }
+
+        public bool SoftCheckPointOnCurve(BigInteger x, BigInteger y)
+        {
+            var x2 = x * x;
+            var y2 = y * y;
+            var left = x2 + y2;
+            var right = 1 + EdwardsCurve.ParameterD * x2 * y2;
+
+            var diff = left - right;
+            return diff % EdwardsCurve.FieldOrder == 0;
+        }
+
+        private void CheckPointOnCurve(BigInteger x, BigInteger y, BigInteger z)
+        {
+            var x2 = x * x;
+            var y2 = y * y;
+            var z2 = z * z;
+            var left = x2 * z2 + y2 * z2;
+            var right = z2 * z2 + EdwardsCurve.ParameterD * x2 * y2;
+
+            var diff = left - right;
+            if (diff % EdwardsCurve.FieldOrder == 0)
+            {
+                return;
+            }
+
+            throw new InvalidOperationException("Точка не принадлежит кривой");
+        }
+    }
+}
+
+AffineEdwardsCurves\AffineEdwardsCurve.cs
+namespace EdwardsCurves.AffineEdwardsCurves
+{
+    using System.Numerics;
+
+    /// <summary> Кривая Эдвардса в аффинных координатах </summary>
+    /// <inheritdoc cref="IEdwardsCurve" />
+    /// >
+    public class AffineEdwardsCurve : IEdwardsCurve
+    {
+        /// <summary> Нейтральный по суммированию элемент </summary>
+        public readonly AffineEdwardsCurvePoint NeitralPoint;
+
+        public AffineEdwardsCurve(BigInteger parameterD, BigInteger fieldOrder)
+        {
+            ParameterD = parameterD;
+            FieldOrder = fieldOrder;
+
+            NeitralPoint = new AffineEdwardsCurvePoint(0, 1, this);
+        }
+
+        public BigInteger ParameterD { get; }
+
+        public BigInteger FieldOrder { get; }
+
+        public override string ToString()
+        {
+            return $"Edwards curve parameters: d = {ParameterD}, fieldOrder = {FieldOrder}";
+        }
+    }
+}
+
+AffineEdwardsCurves\AffineEdwardsCurvePoint.cs
+namespace EdwardsCurves.AffineEdwardsCurves
+{
+    using System.Numerics;
+    using ProjectiveEdwardsCurves;
+    using Utils;
+
+    /// <summary> Точка на кривой Эдвардса в аффинных координатах </summary>
+    public class AffineEdwardsCurvePoint
+    {
+        public AffineEdwardsCurvePoint(BigInteger x, BigInteger y, IEdwardsCurve edwardsCurve)
+        {
+            ParameterX = x.Mod(edwardsCurve.FieldOrder);
+            ParameterY = y.Mod(edwardsCurve.FieldOrder);
+
+            EdwardsCurve = edwardsCurve;
+        }
+
+        /// <summary> Параметр x </summary>
+        public BigInteger ParameterX { get; }
+
+        /// <summary> Параметр y </summary>
+        public BigInteger ParameterY { get; }
+
+        /// <summary> Кривая, которой принадлежит эта точка </summary>
+        public IEdwardsCurve EdwardsCurve { get; }
+
+        public ProjectiveEdwardsCurvePoint ToProjectiveEdwardsCurvePoint(BigInteger? z = null)
+        {
+            if (!z.HasValue)
+            {
+                z = BigInteger.One;
+            }
+
+            var x = ParameterX * z.Value;
+            var y = ParameterY * z.Value;
+            var z2 = z.Value;
+
+            return new ProjectiveEdwardsCurvePoint(x, y, z2, EdwardsCurve);
+        }
+
+        public override string ToString()
+        {
+            return $"(x = {ParameterX}, y = {ParameterY})";
+        }
+    }
+}
+
+AffineEdwardsCurves\AffineEdwardsCurvePointCalculator.cs
+namespace EdwardsCurves.AffineEdwardsCurves
+{
+    using System;
+    using System.Numerics;
+    using Utils;
+
+    /// <summary> Calculator for points of a Edwards curve </summary>
+    public class AffineEdwardsCurvePointCalculator
+    {
+        /// <summary> Sum two points of the same curve </summary>
+        /// <param name="point1">First point</param>
+        /// <param name="point2">Second point</param>
+        /// <returns>Sum point</returns>
+        /// <exception cref="InvalidOperationException">If points belong to different curves</exception>
+        public AffineEdwardsCurvePoint Sum(AffineEdwardsCurvePoint point1, AffineEdwardsCurvePoint point2)
+        {
+            if (point1.EdwardsCurve != point2.EdwardsCurve)
+            {
+                throw new InvalidOperationException("It's not allowed to sum points of two different curves");
+            }
+
+            var (xSum, ySum) = CalcSum(point1, point2);
+
+            return new AffineEdwardsCurvePoint(xSum, ySum, point1.EdwardsCurve);
+        }
+
+        private (BigInteger xSum, BigInteger ySum) CalcSum(AffineEdwardsCurvePoint point1,
+            AffineEdwardsCurvePoint point2)
+        {
+            var x1 = point1.ParameterX;
+            var x2 = point2.ParameterX;
+
+            var y1 = point1.ParameterY;
+            var y2 = point2.ParameterY;
+
+            var d = point1.EdwardsCurve.ParameterD;
+            var znam = d * x1 * x2 * y1 * y2;
+
+            var fieldOrder = point1.EdwardsCurve.FieldOrder;
+            var znam1 = (1 + znam).Mod(fieldOrder).Inverse(fieldOrder).Mod(fieldOrder);
+            var znam2 = (1 - znam).Mod(fieldOrder).Inverse(fieldOrder).Mod(fieldOrder);
+
+            var chisl1 = x1 * y2 + y1 * x2;
+            var chisl2 = y1 * y2 - x1 * x2;
+
+            var xSum = chisl1 * znam1;
+            return (xSum, chisl2 * znam2);
+        }
+
+        public AffineEdwardsCurvePoint Mult(BigInteger k, AffineEdwardsCurvePoint p)
+        {
+            if (k.IsZero)
+            {
+                throw new Exception("Попытка умножить на 0");
+            }
+
+            var b = p;
+            var q = ((AffineEdwardsCurve) p.EdwardsCurve).NeitralPoint;
+
+            while (!k.IsZero)
+            {
+                if (k % 2 == 1)
+                {
+                    q = Sum(q, b);
+                }
+
+                b = Sum(b, b);
+                k /= 2;
+            }
+
+            return q;
+        }
+    }
+}
+
+AffineEdwardsCurves\Lenstra\AffineEdwardsLenstra.cs
+namespace EdwardsCurves.AffineEdwardsCurves.Lenstra
+{
+    using System;
+    using System.Numerics;
+    using System.Threading;
+    using LenstraAlgorithm;
+    using LenstraAlgorithm.Dto;
+    using Utils;
+
+    /// <summary> Алгоритм Ленстры на кривых Эдвардса в аффинных координатах </summary>
+    /// <inheritdoc cref="ILenstra" />
+    public class AffineEdwardsLenstra : ILenstra
+    {
+        public BigInteger B1 = BigInteger.Parse("100000");
+
+        public LenstraFactorizationResult GetDivider(BigInteger n, Random random)
+        {
+            return GetDividerWithCancel(n, random, CancellationToken.None);
+        }
+
+        public LenstraFactorizationResult GetDividerWithCancel(BigInteger n, Random random, CancellationToken token)
+        {
+            var startTime = DateTime.Now;
+
+            BigInteger x, y, d;
+            do
+            {
+                x = BigIntegerExtensions.GetNextRandom(random, n);
+                y = BigIntegerExtensions.GetNextRandom(random, n);
+                d = ((x * x + y * y - 1) * (x * x * y * y).Inverse(n)).Mod(n);
+            } while (d == 1 || d == 0);
+
+            var edwardsCurve = new AffineEdwardsCurve(d, n);
+            var pointsFactory = new PointsFactory(edwardsCurve);
+
+            var calculator = new AffineEdwardsCurvePointCalculator();
+            var point1 = pointsFactory.CreatePoint(x, y);
+
+            BigInteger p = 2;
+
+            try
+            {
+                while (p < B1 && !token.IsCancellationRequested)
+                {
+                    var pr = p;
+                    while (pr < B1 && !token.IsCancellationRequested)
+                    {
+                        point1 = calculator.Mult(p, point1);
+                        var gcd = BigInteger.GreatestCommonDivisor(point1.ParameterX, n);
+                        if (gcd != BigInteger.One)
+                        {
+                            throw new GcdFoundException(gcd);
+                        }
+
+                        pr *= p;
+                    }
+
+                    p = BigIntegerExtensions.NextPrimaryMillerRabin(p);
+                }
+            }
+            catch (GcdFoundException exc)
+            {
+                return new LenstraFactorizationResult
+                {
+                    EllepticCurve = edwardsCurve,
+                    TargetNumber = n,
+                    Divider = exc.GreatestCommonDivisor,
+                    WastedTime = DateTime.Now - startTime,
+                    EndType = EEndType.RunToComplete
+                };
+            }
+
+            return new LenstraFactorizationResult
+            {
+                EllepticCurve = edwardsCurve,
+                TargetNumber = n,
+                WastedTime = DateTime.Now - startTime,
+                EndType = token.IsCancellationRequested ? EEndType.Cancelled : EEndType.RunToComplete
+            };
+        }
+    }
+}
+
+ProjectiveEdwardsCurves\ProjectiveEdwardsCurve.cs
+namespace EdwardsCurves.ProjectiveEdwardsCurves
+{
+    using System.Numerics;
+
+    /// <summary> Кривая Эдвардса в проективных координатах </summary>
+    /// <inheritdoc cref="IEdwardsCurve" />
+    public class ProjectiveEdwardsCurve : IEdwardsCurve
+    {
+        /// <summary> Нейтральная по суммированию точка кривой Эдвардса </summary>
+        public readonly ProjectiveEdwardsCurvePoint NeitralPoint;
+
+        public ProjectiveEdwardsCurve(BigInteger parameterD, BigInteger fieldOrder)
+        {
+            ParameterD = parameterD;
+            FieldOrder = fieldOrder;
+
+            NeitralPoint = new ProjectiveEdwardsCurvePoint(0, 1, 1, this);
+        }
+
+        public BigInteger ParameterD { get; }
+
+        public BigInteger FieldOrder { get; }
+    }
+}
+
+ProjectiveEdwardsCurves\ProjectiveEdwardsCurvePoint.cs
+namespace EdwardsCurves.ProjectiveEdwardsCurves
+{
+    using System.Numerics;
+    using AffineEdwardsCurves;
+    using Utils;
+
+    /// <summary> Точка на кривой Эдвардса в проективных координатах </summary>
+    public class ProjectiveEdwardsCurvePoint
+    {
+        public ProjectiveEdwardsCurvePoint(BigInteger parameterX, BigInteger parameterY, BigInteger parameterZ,
+            IEdwardsCurve projectiveEdwardsCurve)
+        {
+            ProjectiveEdwardsCurve = projectiveEdwardsCurve;
+
+            ParameterX = parameterX.Mod(projectiveEdwardsCurve.FieldOrder);
+            ParameterY = parameterY.Mod(projectiveEdwardsCurve.FieldOrder);
+            ParameterZ = parameterZ.Mod(projectiveEdwardsCurve.FieldOrder);
+        }
+
+        /// <summary> Параметр x </summary>
+        public BigInteger ParameterX { get; }
+
+        /// <summary> Параметр y </summary>
+        public BigInteger ParameterY { get; }
+
+        /// <summary> Параметр z </summary>
+        public BigInteger ParameterZ { get; }
+
+        /// <summary> Кривая, которой принадлежит точка </summary>
+        public IEdwardsCurve ProjectiveEdwardsCurve { get; }
+
+        public AffineEdwardsCurvePoint ToEdwardsCurvePoint()
+        {
+            var inverseZ = ParameterZ.Inverse(ProjectiveEdwardsCurve.FieldOrder);
+
+            var x = ParameterX * inverseZ;
+            var y = ParameterY * inverseZ;
+            return new AffineEdwardsCurvePoint(x, y, ProjectiveEdwardsCurve);
+        }
+
+        public override string ToString()
+        {
+            return $"(x = {ParameterX}, y = {ParameterY}, z = {ParameterZ})";
+        }
+
+        public override bool Equals(object obj)
+        {
+            var otherPoint = (ProjectiveEdwardsCurvePoint) obj;
+
+            // потому что этот метод нужен лишь для тестов. Производительность не важна
+            return ToEdwardsCurvePoint().ToString() == otherPoint.ToEdwardsCurvePoint().ToString();
+        }
+    }
+}
+
+ProjectiveEdwardsCurves\ProjectiveEdwardsCurvePointCalculator.cs
+namespace EdwardsCurves.ProjectiveEdwardsCurves
+{
+    using System;
+    using System.Numerics;
+
+    /// <summary> Calculator for points of a projective Edwards curve </summary>
+    public class ProjectiveEdwardsCurvePointCalculator
+    {
+        /// <summary> Sum two points of the same curve </summary>
+        /// <param name="point1">First point</param>
+        /// <param name="point2">Second point</param>
+        /// <returns>Sum point</returns>
+        /// <exception cref="InvalidOperationException">If points belong to different curves</exception>
+        public ProjectiveEdwardsCurvePoint Sum(ProjectiveEdwardsCurvePoint point1, ProjectiveEdwardsCurvePoint point2)
+        {
+            if (point1.ProjectiveEdwardsCurve != point2.ProjectiveEdwardsCurve)
+            {
+                throw new InvalidOperationException("It's not allowed to sum points of two different curves");
+            }
+
+            var (xSum, ySum, zSum) = AdvancedCalc(point1, point2);
+
+            return new ProjectiveEdwardsCurvePoint(xSum, ySum, zSum, point1.ProjectiveEdwardsCurve);
+        }
+
+        private (BigInteger, BigInteger, BigInteger) AdvancedCalc(ProjectiveEdwardsCurvePoint point1,
+            ProjectiveEdwardsCurvePoint point2)
+        {
+            var x1 = point1.ParameterX;
+            var x2 = point2.ParameterX;
+
+            var y1 = point1.ParameterY;
+            var y2 = point2.ParameterY;
+
+            var z1 = point1.ParameterZ;
+            var z2 = point2.ParameterZ;
+
+            var parameterD = point1.ProjectiveEdwardsCurve.ParameterD;
+
+            var a = z1 * z2;
+            var b = a * a;
+            var c = x1 * x2;
+            var d = y1 * y2;
+            var e = parameterD * c * d;
+            var f = b - e;
+            var g = b + e;
+
+            var xSum = a * f * ((x1 + y1) * (x2 + y2) - c - d);
+            var ySum = a * g * (d - c);
+            var zSum = 1 * f * g;
+
+            return (xSum, ySum, zSum);
+        }
+
+        public ProjectiveEdwardsCurvePoint Mult(BigInteger k, ProjectiveEdwardsCurvePoint p)
+        {
+            if (k.IsZero)
+            {
+                throw new Exception("Попытка умножить на 0");
+            }
+
+            var b = p;
+            var q = ((ProjectiveEdwardsCurve) p.ProjectiveEdwardsCurve).NeitralPoint;
+
+            while (!k.IsZero)
+            {
+                if (k % 2 == 1)
+                {
+                    q = Sum(q, b);
+                }
+
+                b = Sum(b, b);
+                k /= 2;
+            }
+
+            return q;
+        }
+    }
+}
+
+ProjectiveEdwardsCurves\Lenstra\ProjectiveEdwardsLenstra.cs
+namespace EdwardsCurves.ProjectiveEdwardsCurves.Lenstra
+{
+    using System;
+    using System.Globalization;
+    using System.Numerics;
+    using System.Threading;
+    using LenstraAlgorithm;
+    using LenstraAlgorithm.Dto;
+    using Utils;
+
+    /// <summary> Алгоритм Ленстры на кривых Эдвардса в проективных координатах </summary>
+    /// <inheritdoc cref="ILenstra" />
+    public class ProjectiveEdwardsLenstra : ILenstra
+    {
+        public BigInteger B1 = BigInteger.Parse("100000");
+
+        public LenstraFactorizationResult GetDivider(BigInteger n, Random random)
+        {
+            return GetDividerWithCancel(n, random, CancellationToken.None);
+        }
+
+        public LenstraFactorizationResult GetDividerWithCancel(BigInteger n, Random random, CancellationToken token)
+        {
+            var startTime = DateTime.Now;
+            
+            BigInteger x, y, z, d;
+            do
+            { 
+                x = BigIntegerExtensions.GetNextRandom(random, n);
+                y = BigIntegerExtensions.GetNextRandom(random, n);
+                z = BigIntegerExtensions.GetNextRandom(random, n);
+                d = ((x * x * z * z + y * y * z * z - z * z * z * z) * (x * x * y * y).Inverse(n)).Mod(n);
+            } while (d == 1 || d == 0);
+            
+            var projectiveEdwardsCurve = new ProjectiveEdwardsCurve(d, n);
+            PointsFactory pointsFactory;
+            try
+            {
+                pointsFactory = new PointsFactory(projectiveEdwardsCurve);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Console.WriteLine("d = " + d);
+                Console.WriteLine("x = " + x);
+                Console.WriteLine("y = " + y);
+                Console.WriteLine("z = " + z);
+                throw;
+            }
+
+            var calculator = new ProjectiveEdwardsCurvePointCalculator();
+            var point1 = pointsFactory.CreatePoint(x, y, z);
+
+            BigInteger p = 2;
+            BigInteger step = 1;
+            long iteration = 0;
+            while (p < B1 && !token.IsCancellationRequested)
+            {
+                var pr = p;
+                while (pr < B1 && !token.IsCancellationRequested)
+                {
+                    point1 = calculator.Mult(p, point1);
+
+//                    if (iteration++ % step != 0)
+//                    {
+//                        pr *= p;
+//                        continue;
+//                    }
+
+                    pr *= p;
+                    if (point1.ParameterX == BigInteger.Zero)
+                    {
+                        continue;
+                    }
+
+                    // вычисляем НОД только через каждые step итераций, т.к. НОД уменьшает производительность 
+                    // пока это не будет реализовано
+                    var gcd = BigInteger.GreatestCommonDivisor(point1.ParameterX, n);
+                    if (gcd != BigInteger.One)
+                    {
+                        return new LenstraFactorizationResult
+                        {
+                            EllepticCurve = projectiveEdwardsCurve,
+                            TargetNumber = n,
+                            Divider = gcd,
+                            WastedTime = DateTime.Now - startTime,
+                            EndType = EEndType.RunToComplete
+                        };
+                    }
+                }
+
+                p = BigIntegerExtensions.NextPrimaryMillerRabin(p);
+            }
+
+            return new LenstraFactorizationResult
+            {
+                EllepticCurve = projectiveEdwardsCurve,
+                TargetNumber = n,
+                WastedTime = DateTime.Now - startTime,
+                EndType = token.IsCancellationRequested ? EEndType.Cancelled : EEndType.RunToComplete
+            };
+        }
+    }
+}
+
+
+
+EllepticCurveResultGeneration
+Program.cs
+namespace EllepticCurveResultGeneration
+{
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Numerics;
+    using System.Runtime.InteropServices;
+    using System.Text.RegularExpressions;
+    using EC_Console;
+    using EdwardsCurves.AffineEdwardsCurves.Lenstra;
+    using EdwardsCurves.ProjectiveEdwardsCurves.Lenstra;
+    using LenstraAlgorithm;
+
+    /// <summary> Генерация данных для анализа результатов работы алгоритма Ленстры </summary>
+    internal class Program
+    {
+        private const int CountForDimension = 100;
+        
+        private const int CurvesCountForSingleNumber = 100;
+        
+        private const string ContinuationInfoStorePath = @"E:\Stash\diplom\EC_Console\EllepticCurveResultGeneration\ContinuationInfoStore.txt";
+
+        public static string SemiprimesResourceDir = @"E:\Stash\diplom\EC_Console\SemiPrimeNumbersGenerator\Resources";
+
+        private static readonly ContinuationInfo ContinuationInfo;
+
+        static Program()
+        {
+            try
+            {
+                ContinuationInfo = RestoreContinuationInfo();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        public static void Main(string[] args)
+        {
+            const int startDim = 11;
+            const int endDim = 13;
+            
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            var dataDir = Path.GetFullPath(Path.Combine(baseDirectory, @"..\..\Data"));
+            var numberRegex = new Regex(@"\d+");
+            var semiprimesFiles = Directory.GetFiles(SemiprimesResourceDir)
+                .Select(fileName =>
+                {
+                    var minDivStr = numberRegex.Match(fileName).Groups[0];
+                    return new
+                    {
+                        FileName = fileName,
+                        MinDividerDigits = Convert.ToInt32(minDivStr.Value)
+                    };
+                })
+                .Where(dto => startDim <= dto.MinDividerDigits && dto.MinDividerDigits <= endDim)
+                .OrderBy(dto => dto.MinDividerDigits)
+                .Select(dto => dto.FileName)
+                .ToList();
+
+            var lenstraVersions = new[]
+                {nameof(ClassicLenstra), nameof(AffineEdwardsLenstra), nameof(ProjectiveEdwardsLenstra)};
+
+            if (!string.IsNullOrWhiteSpace(ContinuationInfo.LenstraVersion))
+            {
+                lenstraVersions = lenstraVersions.SkipWhile(lv => lv != ContinuationInfo.LenstraVersion).ToArray();
+            }
+            
+            foreach (var lenstraVersion in lenstraVersions)
+            {
+                if (lenstraVersion == nameof(ClassicLenstra))
+                {
+                    ProcessFiles<ClassicLenstra>(semiprimesFiles, dataDir, lenstraVersion);
+                }
+                else if (lenstraVersion == nameof(AffineEdwardsLenstra))
+                {
+                    ProcessFiles<AffineEdwardsLenstra>(semiprimesFiles, dataDir, lenstraVersion);
+                }
+                else if (lenstraVersion == nameof(ProjectiveEdwardsLenstra))
+                {
+                    ProcessFiles<ProjectiveEdwardsLenstra>(semiprimesFiles, dataDir, lenstraVersion);
+                }
+            }
+        }
+
+        private static ContinuationInfo RestoreContinuationInfo()
+        {
+            var lines = File.ReadAllLines(ContinuationInfoStorePath);
+            if (!lines.Any() || !lines[0].Contains("|"))
+            {
+                return new ContinuationInfo();
+            }
+
+            var words = lines[0].Split('|');
+            var result = new ContinuationInfo()
+            {
+                LenstraVersion = words[0],
+                ProcessingFileName = words[1]
+            };
+            
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            var dataDir = Path.GetFullPath(Path.Combine(baseDirectory, @"..\..\Data", result.LenstraVersion));
+            var lastCreatedFile = Directory.GetFiles(dataDir)
+                .Where(fileName => fileName.EndsWith(".txt"))
+                .OrderBy(File.GetCreationTime)
+                .LastOrDefault();
+
+            if (lastCreatedFile == null)
+            {
+                return result;
+            }
+
+            var lastHandledNumber = File.ReadAllLines(lastCreatedFile).Last().Split('|')[0];
+            var lastProcessedLine = File.ReadAllLines(result.ProcessingFileName)
+                                        .Select(line => line.Split('|')[0])
+                                        .TakeWhile(tn => tn != lastHandledNumber)
+                                        .Count()
+                                    + 1;
+
+            result.LastProcessedLine = lastProcessedLine;
+
+            return result;
+        }
+
+        private static void ProcessFiles<TLenstra>(List<string> semiprimesFiles, string dataDir, string version) where TLenstra:ILenstra, new()
+        {
+            var mtl = new MultithreadLenstra<TLenstra>();
+            
+            if (version == ContinuationInfo.LenstraVersion && !string.IsNullOrWhiteSpace(ContinuationInfo.ProcessingFileName))
+            {
+                semiprimesFiles = semiprimesFiles
+                    .SkipWhile(fileName => fileName != ContinuationInfo.ProcessingFileName)
+                    .ToList();
+            }
+
+            var lenstraVersion = typeof(TLenstra).Name;
+            foreach (var semiprimesFile in semiprimesFiles)
+            {
+                File.WriteAllText(ContinuationInfoStorePath, lenstraVersion + "|" + semiprimesFile);
+                var fileName = Path.GetFileName(semiprimesFile);
+
+                var path = Path.Combine(dataDir, lenstraVersion, fileName ?? throw new FileNotFoundException());
+                
+                var semiprimes = File.ReadAllLines(semiprimesFile).Take(CountForDimension).Select(BigInteger.Parse)
+                    .ToArray();
+                
+                if (version == ContinuationInfo.LenstraVersion && ContinuationInfo.ProcessingFileName == semiprimesFile)
+                {
+                    semiprimes = semiprimes.Skip(ContinuationInfo.LastProcessedLine).ToArray();
+                }
+
+                double k = 0;
+                foreach (var semiprime in semiprimes)
+                {
+                    Console.Write("\rHandling " + semiprime + ". Processed " + (k / semiprimes.Length).ToString("P") + " of " + fileName);
+                    k++;
+                    var results = mtl.LenstraMultiThreadResults(semiprime, CurvesCountForSingleNumber);
+                    var infos =  results
+                            .Select(result => $"{result.TargetNumber}|{result.Divider}|{result.WastedTime.Ticks}")
+                            .ToArray();
+                    File.AppendAllLines(path, infos);
+                }
+            }
+        }
+    }
+
+    /// <summary> Информация для продолжения после прерывания </summary>
+    internal class ContinuationInfo
+    {
+        public string LenstraVersion { get; set; }
+        
+        public string ProcessingFileName { get; set; }
+
+        public int LastProcessedLine { get; set; }
+    }
+}
+
+
+
+LenstraAlgorithm
+IEllepticCurve.cs
+namespace LenstraAlgorithm
+{
+    using System.Numerics;
+
+    /// <summary> Эллиптическая кривая </summary>
+    public interface IEllepticCurve
+    {
+        /// <summary> Размерность поля, в котором находятся координаты точек эллиптической кривой </summary>
+        BigInteger FieldOrder { get; }
+    }
+}
+
+ILenstra.cs
+namespace LenstraAlgorithm
+{
+    using System;
+    using System.Numerics;
+    using System.Threading;
+    using Dto;
+
+    /// <summary> Сервис, предоставляющий методы для запуска алгоритма Ленстры </summary>
+    public interface ILenstra
+    {
+        /// <summary> Факторизовать число n </summary>
+        /// <param name="n">Факторизуемое число</param>
+        /// <param name="random">Компонент случайности</param>
+        /// <returns>Результатат факторизации</returns>
+        LenstraFactorizationResult GetDivider(BigInteger n, Random random);
+
+        /// <summary> Факторизовать число n с поддержкой отмены операции</summary>
+        /// <param name="n">Факторизуемое число</param>
+        /// <param name="random">Компонент случайности</param>
+        /// <param name="token">Токен отмены</param>
+        /// <returns>Результатат факторизации</returns>
+        LenstraFactorizationResult GetDividerWithCancel(BigInteger n, Random random, CancellationToken token);
+    }
+}
+
+MultithreadLenstra.cs
+namespace LenstraAlgorithm
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
+    using System.Numerics;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Dto;
+
+    /// <summary> Сервис, предоставляющий функционал, который использует метод Ленстры в многопоточном режиме </summary>
+    public class MultithreadLenstra<TLenstra> where TLenstra : ILenstra, new()
+    {
+        private readonly ILenstra _lenstra;
+        
+        private readonly Random _random = new Random();
+
+        public MultithreadLenstra()
+        {
+            _lenstra = new TLenstra();
+        }
+
+        /// <summary> Применяет пул ЭК к числам для факторизации </summary>
+        /// <param name="pathTwoPrimesMultiple">Имя файла с числами для факторизации</param>
+        /// <param name="threadsCount">Колчиство потоков</param>
+        /// <returns>Список результатов со всех ЭК</returns>
+        public List<LenstraFactorizationResult> UseThreadsParallelism(string pathTwoPrimesMultiple, int threadsCount)
+        {
+            var twoPrimeMultiplesStrings = File.ReadAllLines(pathTwoPrimesMultiple);
+            var list = new List<LenstraFactorizationResult>();
+            foreach (var n in twoPrimeMultiplesStrings.Select(BigInteger.Parse).Take(10))
+            {
+                list.AddRange(LenstraMultiThreadResults(n, threadsCount));
+            }
+
+            return list;
+        }
+
+        /// <summary>  </summary>
+        /// <param name="pathTwoPrimesMultiple">Имя файла с числами для факторизации</param>
+        /// <param name="threadsCount">Количество потоков</param>
+        public List<FactorizeTimeResult> GetMinTimes(string pathTwoPrimesMultiple, int threadsCount)
+        {
+            var twoPrimeMultiplesStrings = File.ReadAllLines(pathTwoPrimesMultiple);
+            var list = new List<FactorizeTimeResult>();
+            foreach (var n in twoPrimeMultiplesStrings.Select(BigInteger.Parse).Take(10))
+            {
+                list.Add(GetLenstraMultiThreadFastResultSeconds(n, threadsCount));
+            }
+
+            return list;
+        }
+
+        /// <summary> Факторизация методом Ленстры. Каждая кривая пытается факторизовать число вне зависимости от остальных кривых. </summary>
+        /// <param name="n">Число, которое необходимо факторизовать</param>
+        /// <param name="threadsCount">Количество потоков == количество ЭК</param>
+        public IReadOnlyList<LenstraFactorizationResult> LenstraMultiThreadResults(BigInteger n, int threadsCount)
+        {
+            if (n == BigInteger.One)
+            {
+                throw new Exception("LenstraMultiThreadResults: n == BigInteger.One");
+            }
+
+            if (threadsCount < 1)
+            {
+                throw new Exception("Количество потоков не может быть < 1");
+            }
+
+            var result = new List<LenstraFactorizationResult>();
+            var cycles = threadsCount / Environment.ProcessorCount;
+            var leftCycles = threadsCount % Environment.ProcessorCount;
+
+            // todo: удалить после проверки
+            if (cycles * Environment.ProcessorCount + leftCycles != threadsCount)
+            {
+                throw new InvalidOperationException("Неправильно расчитано количество циклов");
+            }
+
+            for (var k = 0; k < cycles; k++)
+            {
+                var tasks = new Task<LenstraFactorizationResult>[Environment.ProcessorCount];
+                for (var i = 0; i < tasks.Length; i++)
+                {
+                    tasks[i] = Task.Factory.StartNew(() => _lenstra.GetDivider(n, _random));
+                }
+
+                Task.WaitAll(tasks);
+
+                result.AddRange(tasks.Select(task => task.Result));
+            }
+
+            if (leftCycles > 0)
+            {
+                var tasks = new Task<LenstraFactorizationResult>[leftCycles];
+                for (var i = 0; i < tasks.Length; i++)
+                {
+                    tasks[i] = Task.Factory.StartNew(() => _lenstra.GetDivider(n, _random));
+                }
+
+                Task.WaitAll(tasks);
+
+                result.AddRange(tasks.Select(task => task.Result));
+            }
+
+            return result;
+        }
+
+        /// <summary> Найти делитель числа </summary>
+        /// <param name="n">Число, делитель которого необходимо найти</param>
+        /// <param name="threadsCount">Количество потоков == количество ЭК для факторизации</param>
+        /// <returns>Делитель или null</returns>
+        public BigInteger? LenstraMultiThreadFastResult(BigInteger n, int threadsCount)
+        {
+            var cycles = (threadsCount - 1) / Environment.ProcessorCount + 1;
+            for (var k = 0; k < cycles; k++)
+            {
+                var cts = new CancellationTokenSource();
+                var tasks = new Task<LenstraFactorizationResult>[Environment.ProcessorCount];
+                for (var i = 0; i < tasks.Length; i++)
+                {
+                    tasks[i] = Task.Factory.StartNew(() => _lenstra.GetDividerWithCancel(n, _random, cts.Token),
+                        cts.Token);
+                }
+
+                Task.WaitAny(tasks);
+                var successedTask =
+                    tasks.FirstOrDefault(x => x.Status == TaskStatus.RanToCompletion && x.Result.Success);
+
+                cts.Cancel();
+                if (successedTask?.Result != null)
+                {
+                    return successedTask.Result.Divider;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary> Время(сек.) нахождения делителя </summary>
+        /// <param name="n">Число, делитель которого необходимо найти</param>
+        /// <param name="threadsCount">Количество потоков == количество ЭК для факторизации</param>
+        public FactorizeTimeResult GetLenstraMultiThreadFastResultSeconds(BigInteger n, int threadsCount)
+        {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            var divider = LenstraMultiThreadFastResult(n, threadsCount);
+            stopWatch.Stop();
+
+            return new FactorizeTimeResult
+            {
+                Divider = divider,
+                TimeSpan = TimeSpan.FromTicks(stopWatch.ElapsedTicks),
+                FactorizedNumber = n
+            };
+        }
+    }
+}
+
+Dto\EEndType.cs
+namespace LenstraAlgorithm.Dto
+{
+    /// <summary> Контекст остановки факторизации </summary>
+    public enum EEndType
+    {
+        /// <summary> Алгоритм отработал доконца </summary>
+        RunToComplete = 10,
+        
+        /// <summary> Алгоритм был отменен </summary>
+        Cancelled = 20
+    }
+}
+
+Dto\FactorizeTimeResult.cs
+namespace LenstraAlgorithm.Dto
+{
+    using System;
+    using System.Numerics;
+
+    /// <summary> Информация о времени факторизации числа </summary>
+    public class FactorizeTimeResult
+    {
+        /// <summary> Размерность факторизуемого числа </summary>
+        public int FactorizedNumberDimension => FactorizedNumber.ToString().Length;
+
+        /// <summary> Факторизуемое число </summary>
+        public BigInteger FactorizedNumber { get; set; }
+
+        /// <summary> Размерность делителя </summary>
+        /// <exception cref="InvalidOperationException">Если делитель не был найден</exception>
+        public int DividerDimension
+        {
+            get
+            {
+                if (Divider != null)
+                {
+                    return Divider.Value.ToString().Length;
+                }
+
+                throw new InvalidOperationException();
+            }
+        }
+
+        /// <summary> Делитель. Если не найден, то null </summary>
+        public BigInteger? Divider { get; set; }
+
+        /// <summary> Признак успешности факторизации числа </summary>
+        public bool Success => Divider.HasValue;
+
+        /// <summary> Затраченное время </summary>
+        public TimeSpan? TimeSpan { get; set; }
+    }
+}
+
+Dto\LenstraEdges.cs
+namespace LenstraAlgorithm.Dto
+{
+    using System.Numerics;
+
+    /// <summary> Границы для отпимизации метода Ленстры </summary>
+    public class LenstraEdges
+    {
+        /// <summary> Граница B1 </summary>
+        public BigInteger B1;
+
+        /// <summary> Граница B2 </summary>
+        public BigInteger B2;
+    }
+}
+
+Dto\LenstraFactorizationResult.cs
+namespace LenstraAlgorithm.Dto
+{
+    using System;
+    using System.Numerics;
+
+    /// <summary> Результаты эллиптической кривой при попытке факторизации числа </summary>
+    public class LenstraFactorizationResult
+    {
+        /// <summary> Делитель </summary>
+        public BigInteger Divider = BigInteger.One;
+
+        /// <summary> Эллиптическая кривая </summary>
+        public IEllepticCurve EllepticCurve;
+
+        /// <summary> Факторизуемое число </summary>
+        public BigInteger TargetNumber;
+
+        /// <summary> Потрачено времени </summary>
+        public TimeSpan WastedTime;
+
+        /// <summary> Разрядность факторизуемого числа </summary>
+        public int TargetNumberDigitsCount => TargetNumber.ToString().Length;
+
+        /// <summary> Разрядность делителя факторизуемого числа </summary>
+        public int DividerDigitsCount => Divider.ToString().Length;
+
+        /// <summary> Успех? </summary>
+        public bool Success => Divider != BigInteger.One && Divider != TargetNumber;
+
+        /// <summary> Контекст остановки факторизации </summary>
+        public EEndType EndType { get; set; }
+
+        public override string ToString()
+        {
+            return $"Success = {Success},  Divider = {Divider},  WastedTime= {WastedTime} ";
+        }
+    }
+}
+
+
+
+PointsSumPerformanceAnalisys
+Program.cs
+namespace PointsSumPerformanceAnalisys
+{
+    using System;
+    using System.Diagnostics;
+    using System.Numerics;
+    using System.Threading.Tasks;
+    using EC_Console;
+    using EdwardsCurves;
+    using EdwardsCurves.AffineEdwardsCurves;
+    using EdwardsCurves.ProjectiveEdwardsCurves;
+    using Utils;
+
+    internal class Program
+    {
+        public static Random Random = new Random();
+        
+        public static void Main(string[] args)
+        {
+            var fieldOrder = GetSizedRandomPrime(10);
+            var sumsCount = 10000;
+            
+            Compare(fieldOrder, sumsCount);
+            Compare(fieldOrder, sumsCount*10);
+            Compare(fieldOrder, sumsCount*100);
+            
+            Compare(GetSizedRandomPrime(10), sumsCount);
+            Compare(GetSizedRandomPrime(10+3), sumsCount);
+            Compare(GetSizedRandomPrime(10+6), sumsCount);
+            
+            /*
+                Results of summing 10000 times on field with order 2845536623
+                Weier: 91ms
+                AffineEdwards: 148ms
+                ProjEdwards: 54ms
+                Results of summing 100000 times on field with order 2845536623
+                Weier: 832ms
+                AffineEdwards: 1360ms
+                ProjEdwards: 382ms
+                Results of summing 1000000 times on field with order 2845536623
+                Weier: 8160ms
+                AffineEdwards: 13505ms
+                ProjEdwards: 3719ms
+                Results of summing 10000 times on field with order 9690953449
+                Weier: 105ms
+                AffineEdwards: 175ms
+                ProjEdwards: 63ms
+                Results of summing 10000 times on field with order 8895348761251
+                Weier: 159ms
+                AffineEdwards: 279ms
+                ProjEdwards: 71ms
+                Results of summing 10000 times on field with order 1105857379773127
+                Weier: 199ms
+                AffineEdwards: 366ms
+                ProjEdwards: 82ms
+             */
+            
+        }
+
+        private static void Compare(BigInteger fieldOrder, int sumsCount)
+        {
+            var tasks = new[]
+            {
+                new Task<(long, string)>(() => (GetMsOfWeierCurve(fieldOrder, sumsCount), "Weier")),
+                new Task<(long, string)>(() => (GetMsOfAffineEdwardsCurve(fieldOrder, sumsCount), "AffineEdwards")),
+                new Task<(long, string)>(() => (GetMsOfProjEdwardsCurve(fieldOrder, sumsCount), "ProjEdwards"))
+            };
+            foreach (var task in tasks)
+            {
+                task.Start();
+            }
+
+            Task.WaitAll(tasks);
+            Console.WriteLine($"Results of summing {sumsCount} times on field with order {fieldOrder}");
+            foreach (var task in tasks)
+            {
+                var curveType = task.Result.Item2;
+                var ms = task.Result.Item1;
+                Console.WriteLine(curveType + ": " + ms + "ms");
+            }
+        }
+
+        private static BigInteger GetSizedRandomPrime(int size)
+        {
+
+            var topBound = BigInteger.Pow(10, size);
+            var bottonBound = BigInteger.Pow(10, size - 1);
+            BigInteger number = 0;
+            while (number >= topBound || number <= bottonBound)
+            {
+                var randomNumber = BigIntegerExtensions.GetNextRandom(Random, BigInteger.Pow(10, size));
+                number = BigIntegerExtensions.NextPrimaryMillerRabin(randomNumber);
+            }
+
+            return number;
+        }
+        
+        public static long GetMsOfWeierCurve(BigInteger fieldOrder, int sumsCount)
+        {
+            var a = 5;
+            var b = 3;
+            var ec = new EllepticCurve(a, b, fieldOrder);
+
+            BigInteger x = 0;
+            var tenExp = 1000000000000000000;
+            var y = Math.Sqrt((double) (x * x * x + a * x + b).Mod(fieldOrder));
+            while (x < fieldOrder && ((long) (y * tenExp) % tenExp != 0))
+            {
+                x++;
+                y = Math.Sqrt((double) (x * x * x + a * x + b).Mod(fieldOrder));
+            }
+
+            var point = ec.CreatePoint(x, (BigInteger) y);
+
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            for (var i = 0; i < sumsCount; i++)
+            {
+               // Console.Write("\r"+(((double)i)/sumsCount).ToString("P"));
+                point = ec.Sum(point, point);
+            }
+
+         //   Console.WriteLine();
+            stopWatch.Stop();
+            
+            return stopWatch.ElapsedMilliseconds;
+
+        }
+        
+        public static long GetMsOfAffineEdwardsCurve(BigInteger fieldOrder, int sumsCount)
+        {
+            BigInteger x, y, d;
+            var random = new Random();
+            do
+            {
+                x = BigIntegerExtensions.GetNextRandom(random, fieldOrder);
+                y = BigIntegerExtensions.GetNextRandom(random, fieldOrder);
+                d = ((x * x + y * y - 1) * (x * x * y * y).Inverse(fieldOrder)).Mod(fieldOrder);
+            } while (d == 1 || d == 0);
+           
+            var edwardsCurve = new AffineEdwardsCurve(d, fieldOrder);
+            
+            var pointsFactory = new PointsFactory(edwardsCurve);
+            var calculator = new AffineEdwardsCurvePointCalculator();
+
+            var point = pointsFactory.CreatePoint(x, y);
+
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            for (var i = 0; i < sumsCount; i++)
+            {
+                // Console.Write("\r"+(((double)i)/sumsCount).ToString("P"));
+                point = calculator.Sum(point, point);
+            }
+
+            //Console.WriteLine();
+            stopWatch.Stop();
+            
+            return stopWatch.ElapsedMilliseconds;
+        }
+        
+        public static long GetMsOfProjEdwardsCurve(BigInteger fieldOrder, int sumsCount)
+        {
+            var random = new Random();
+            BigInteger x, y, z, d;
+            do
+            { 
+                x = BigIntegerExtensions.GetNextRandom(random, fieldOrder);
+                y = BigIntegerExtensions.GetNextRandom(random, fieldOrder);
+                z = BigIntegerExtensions.GetNextRandom(random, fieldOrder);
+                d = ((x * x * z * z + y * y * z * z - z * z * z * z) * (x * x * y * y).Inverse(fieldOrder)).Mod(fieldOrder);
+            } while (d == 1 || d == 0);
+            
+            var projectiveEdwardsCurve = new ProjectiveEdwardsCurve(d, fieldOrder);
+            var pointsFactory = new PointsFactory(projectiveEdwardsCurve);
+            
+            var calculator = new ProjectiveEdwardsCurvePointCalculator();
+
+            var point = pointsFactory.CreatePoint(x, y, z);
+
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            for (var i = 0; i < sumsCount; i++)
+            {
+                // Console.Write("\r"+(((double)i)/sumsCount).ToString("P"));
+                point = calculator.Sum(point, point);
+            }
+
+            //Console.WriteLine();
+            stopWatch.Stop();
+            
+            return stopWatch.ElapsedMilliseconds;
+        }
+    }
+}
+
+
+
+SemiPrimeNumbersGenerator
+Program.cs
+namespace SemiPrimeNumbersGenerator
+{
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Numerics;
+    using System.Threading.Tasks;
+    using Utils;
+
+    /// <summary> Генератор полупростых чисел </summary>
+    internal class Program
+    {
+        public const int NumbersCountForDimension = 1000;
+
+        public static Random Random = new Random();
+
+        public static void Main(string[] args)
+        {
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            var resourcesDir = Path.GetFullPath(Path.Combine(baseDirectory, @"..\..\Resources"));
+
+            var dimensions = Enumerable.Range(4, 17).ToArray();
+            Parallel.ForEach(dimensions, (dividerDim) =>
+            {
+                var fileName = $"MinDivider{dividerDim}Digit.txt";
+                var path = Path.Combine(resourcesDir, fileName);
+                GenerateTwoPrimesMultipleNumbersInFile(path, dividerDim);
+                Console.WriteLine($"{fileName} has been generated");
+            });
+        }
+
+        public static void GenerateTwoPrimesMultipleNumbersInFile(string path, int dividerSize)
+        {
+            var topBound = BigInteger.Pow(10, dividerSize);
+            var bottonBound = BigInteger.Pow(10, dividerSize - 1);
+
+            BigInteger GetSizedRandomPrime()
+            {
+                BigInteger number = 0;
+                while (number >= topBound || number <= bottonBound)
+                {
+                    var randomNumber = BigIntegerExtensions.GetNextRandom(Random, BigInteger.Pow(10, dividerSize));
+                    number = BigIntegerExtensions.NextPrimaryMillerRabin(randomNumber);
+                }
+
+                return number;
+            }
+
+            var semiPrimeNumbers = new List<string>();
+            for (var i = 0; i < NumbersCountForDimension; i++)
+            {
+                var first = GetSizedRandomPrime();
+                var second = GetSizedRandomPrime();
+                var semiPrime = first * second;
+                semiPrimeNumbers.Add(semiPrime.ToString());
+            }
+
+            File.WriteAllLines(path, semiPrimeNumbers);
+        }
+    }
+}
+
+
+
+TestProject
+EdwardCurvesTest.cs
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Numerics;
+using EdwardsCurves;
+using Utils;
+
+namespace TestProject
+{
+    using EdwardsCurves.AffineEdwardsCurves;
+
+    public class EdwardCurvesTest
+    {
+        public static void TestSum(AffineEdwardsCurvePoint point1, AffineEdwardsCurvePoint point2)
+        {
+            var calculator = new AffineEdwardsCurvePointCalculator();
+            var p3 = calculator.Sum(point1, point2);
+            
+            var fieldOrder = point1.EdwardsCurve.FieldOrder;
+            var d = point1.EdwardsCurve.ParameterD;
+            CheckEquality(p3.ParameterX, p3.ParameterY, d, fieldOrder);
+
+            point2 = new AffineEdwardsCurvePoint((-point2.ParameterX).Mod(fieldOrder), point2.ParameterY, point2.EdwardsCurve); 
+            p3 = new AffineEdwardsCurvePoint((-p3.ParameterX).Mod(fieldOrder), p3.ParameterY, p3.EdwardsCurve); 
+
+            var sum2 = calculator.Sum(point1, p3);
+            CheckEquality(sum2.ParameterX, sum2.ParameterY, d, fieldOrder);
+
+            if (sum2.ToString() == point2.ToString())
+            {
+                return;
+            }
+
+            throw new Exception("123");
+
+        }
+
+        public static void CheckSum()
+        {
+            BigInteger fieldOrder = 11;
+            BigInteger d = 2;
+            var edwardsCurve = new AffineEdwardsCurve(d, fieldOrder);
+            var pointsFactory = new PointsFactory(edwardsCurve);
+
+            var points = new[]
+            {
+                CreatePoint(0, 1, pointsFactory),
+                CreatePoint(0, 10, pointsFactory),
+                CreatePoint(1, 0, pointsFactory),
+                CreatePoint(3, 4, pointsFactory),
+                CreatePoint(3, 7, pointsFactory),
+                CreatePoint(4, 3, pointsFactory),
+                CreatePoint(4, 8, pointsFactory),
+                CreatePoint(7, 3, pointsFactory),
+                CreatePoint(7, 8, pointsFactory),
+                CreatePoint(8, 4, pointsFactory),
+                CreatePoint(8, 7, pointsFactory),
+                CreatePoint(10, 0, pointsFactory)
+            };
+
+            for (int i = 0; i < points.Length; i++)
+            {
+                for (int j = 0; j < points.Length; j++)
+                {
+                    TestSum(points[i], points[j]);
+                }
+            }
+           
+//            return;
+//            var sum = CreatePoint(7, 3, pointsFactory);
+//            
+//            var calculator = new AffineEdwardsCurvePointCalculator();
+//            var p3 = calculator.Sum(point1, point2);
+//            CheckEquality(p3.ParameterX, p3.ParameterY, d, fieldOrder);
+//            
+//            Console.WriteLine(point1);
+//            Console.WriteLine(point2);
+//            Console.WriteLine(p3);
+        }
+
+        private static AffineEdwardsCurvePoint CreatePoint(BigInteger x, BigInteger y, PointsFactory pointsFactory)
+        {
+            var d = pointsFactory.EdwardsCurve.ParameterD;
+            var fieldOrder = pointsFactory.EdwardsCurve.FieldOrder;
+            CheckEquality(x, y, d, fieldOrder);
+
+            return pointsFactory.CreatePoint(x, y);
+
+        }
+
+        private static void CheckEquality(BigInteger x, BigInteger y, BigInteger d, BigInteger fieldOrder)
+        {
+            var x2 = x * x;
+            var y2 = y * y;
+            var left = (x2 + y2).Mod(fieldOrder);
+            var right = (1 + d * x2 * y2).Mod(fieldOrder);
+
+            if (left == right)
+            {
+                return;
+            }
+
+            var errorMsg = $"Точка ({x}, {y}) не принадлежит кривой x^2+y^2 = 1 + {d}*x^2*y^2 mod {fieldOrder}";
+            throw new InvalidOperationException(errorMsg);
+        }
+
+        public static void Start()
+        {
+            GetAllPoints();
+        }
+
+        public static void GetAllPoints()
+        {
+            BigInteger fieldOrder = BigInteger.Parse("113")*BigInteger.Parse("19");
+            BigInteger x, y, d;
+            var random = new Random();
+            do
+            {
+                x = BigIntegerExtensions.GetNextRandom(random, fieldOrder);
+                y = BigIntegerExtensions.GetNextRandom(random, fieldOrder);
+                d = ((x * x + y * y - 1) * (x * x * y * y).Inverse(fieldOrder)).Mod(fieldOrder);
+            } while (d == 1 || d == 0);
+
+       //     d = 1;
+            Console.WriteLine($"x = {x}");
+            Console.WriteLine($"y = {y}");
+
+            var edwardsCurve = new AffineEdwardsCurve(d, fieldOrder);
+            Console.WriteLine(edwardsCurve);
+            
+            var pointsFactory = new PointsFactory(edwardsCurve);
+            
+            var points = new List<AffineEdwardsCurvePoint>();
+            for (var x1 = 0; x1 < fieldOrder; x1++)
+            {
+                for (var y1 = 0; y1 < fieldOrder; y1++)
+                {
+                    if (!pointsFactory.SoftCheckPointOnCurve(x1, y1))
+                    {
+                        continue;
+                    }
+
+                    points.Add(pointsFactory.CreatePoint(x1, y1));
+                }
+            }
+
+            Console.WriteLine("Edwards curve has " + points.Count + " points");
+
+            var calculator = new AffineEdwardsCurvePointCalculator();
+            var pairs = points.Join(points, p1 => 1, p2 => 1, (p1, p2) => new {p1, p2}).ToArray();
+            try
+            {
+                var sumPoints = pairs.AsParallel().Select(pair => calculator.Sum(pair.p1, pair.p2));
+                Console.WriteLine("Sums were calculated without any exception. Sums count:" + sumPoints.Count());
+            }
+            catch (AggregateException e)
+            {
+                var gcdFoundException = e.InnerExceptions.First() as GcdFoundException;
+                if (gcdFoundException == null)
+                {
+                    throw;
+                }
+                
+                Console.WriteLine(gcdFoundException.Message);
+                Console.WriteLine(gcdFoundException.GreatestCommonDivisor);
+            }
+        }
+        
+        public static void GetAllPointsSpecial2()
+        {
+            BigInteger fieldOrder = BigInteger.Parse("7")*BigInteger.Parse("5");
+            BigInteger d = 3;
+            
+            var edwardsCurve = new AffineEdwardsCurve(d, fieldOrder);
+            var pointsFactory = new PointsFactory(edwardsCurve);
+            var points = new List<AffineEdwardsCurvePoint>();
+            for (var x1 = 0; x1 < fieldOrder; x1++)
+            {
+                for (var y1 = 0; y1 < fieldOrder; y1++)
+                {
+                    if (!pointsFactory.SoftCheckPointOnCurve(x1, y1))
+                    {
+                        continue;
+                    }
+
+                    points.Add(pointsFactory.CreatePoint(x1, y1));
+                }
+            }
+
+            Console.WriteLine("Edwards curve has " + points.Count + " points");
+
+            var calculator = new AffineEdwardsCurvePointCalculator();
+            var pairs = points.Join(points, p1 => 1, p2 => 1, (p1, p2) => new {p1, p2}).ToArray();
+            try
+            {
+                var sumPoints = pairs.AsParallel().Select(pair => calculator.Sum(pair.p1, pair.p2));
+                Console.WriteLine("Sums were calculated without any exception. Sums count:" + sumPoints.Count());
+            }
+            catch (AggregateException e)
+            {
+                var gcdFoundException = e.InnerExceptions.First() as GcdFoundException;
+                if (gcdFoundException == null)
+                {
+                    throw;
+                }
+                
+                Console.WriteLine(gcdFoundException.Message);
+                Console.WriteLine(gcdFoundException.GreatestCommonDivisor);
+            }
+        }
+
+        public static void GetAllPointsSpecial()
+        {
+            BigInteger fieldOrder = BigInteger.Parse("113")*BigInteger.Parse("19");
+            BigInteger x = 705, y = 232, d = 1577;
+            var edwardsCurve = new AffineEdwardsCurve(d, fieldOrder);
+            
+            var pointsFactory = new PointsFactory(edwardsCurve);
+            var points = new List<AffineEdwardsCurvePoint>();
+            for (var x1 = 0; x1 < fieldOrder; x1++)
+            {
+                for (var y1 = 0; y1 < fieldOrder; y1++)
+                {
+                    if (!pointsFactory.SoftCheckPointOnCurve(x1, y1))
+                    {
+                        continue;
+                    }
+
+                    points.Add(pointsFactory.CreatePoint(x1, y1));
+                }
+            }
+
+            Console.WriteLine("Edwards curve has " + points.Count + " points");
+
+            var calculator = new AffineEdwardsCurvePointCalculator();
+            var pairs = points.Join(points, p1 => 1, p2 => 1, (p1, p2) => new {p1, p2}).ToArray();
+            
+            
+            try
+            {
+                var sumPoints = pairs.AsParallel().Select(pair => calculator.Sum(pair.p1, pair.p2));
+                Console.WriteLine("Sums were calculated without any exception. Sums count:" + sumPoints.Count());
+            }
+            catch (AggregateException e)
+            {
+                var gcdFoundException = e.InnerExceptions.First() as GcdFoundException;
+                if (gcdFoundException == null)
+                {
+                    throw;
+                }
+                
+                Console.WriteLine(gcdFoundException.Message);
+                Console.WriteLine(gcdFoundException.GreatestCommonDivisor);
+            }
+        }
+    }
+}
+
+Program.cs
+using System;
+using System.Diagnostics;
+using System.Numerics;
+using EC_Console;
+using EdwardsCurves;
+using LenstraAlgorithm;
+using Utils;
+
+namespace TestProject
+{
+    using EdwardsCurves.AffineEdwardsCurves.Lenstra;
+    using EdwardsCurves.ProjectiveEdwardsCurves;
+    using EdwardsCurves.ProjectiveEdwardsCurves.Lenstra;
+
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            //EdwardCurvesTest.Start();
+            //Test8();
+            Test6();
+            // Test7();
+        }
+
+        /// <summary> Тест на корректность суммирования </summary>
+        private static void Test1()
+        {
+            var d = 8;
+            var fieldOrder = 13;
+
+            var projectiveEdwardsCurve = new ProjectiveEdwardsCurve(d, fieldOrder);
+            var pointsFactory = new PointsFactory(projectiveEdwardsCurve);
+
+            var point1 = pointsFactory.CreatePoint(3, 6, 1);
+            var point2 = pointsFactory.CreatePoint(6, 3, 1);
+
+            var calculator = new ProjectiveEdwardsCurvePointCalculator();
+
+            var sum = calculator.Sum(point1, point2);
+
+            Console.WriteLine(sum);
+            Console.WriteLine(sum.ToEdwardsCurvePoint());
+        }
+
+        private static void Test2()
+        {
+            const int d = 8;
+            const int fieldOrder = 13;
+
+            var projectiveEdwardsCurve = new ProjectiveEdwardsCurve(d, fieldOrder);
+            var pointsFactory = new PointsFactory(projectiveEdwardsCurve);
+
+            var point1 = pointsFactory.CreatePoint(6, 12, 2);
+            var point2 = projectiveEdwardsCurve.NeitralPoint;
+
+            var calculator = new ProjectiveEdwardsCurvePointCalculator();
+
+            var sum = calculator.Sum(point1, point2);
+
+            Console.WriteLine(sum);
+            Console.WriteLine(sum.ToEdwardsCurvePoint());
+        }
+        
+        private static void Test3()
+        {
+            for (var multipleCount = 2; multipleCount < 9999; multipleCount++)
+            {
+                Test3Inner(multipleCount);
+            }
+        }
+
+        private static void Test3Inner(int multipleCount)
+        {
+            const int d = 8;
+            const int fieldOrder = 13;
+            var projectiveEdwardsCurve = new ProjectiveEdwardsCurve(d, fieldOrder);
+            var pointsFactory = new PointsFactory(projectiveEdwardsCurve);
+
+            var initialPoint = pointsFactory.CreatePoint(6, 12, 2);
+            var point1 = pointsFactory.CreatePoint(6, 12, 2);
+
+            var calculator = new ProjectiveEdwardsCurvePointCalculator();
+            for (var i = 0; i < multipleCount - 1; i++)
+            {
+                point1 = calculator.Sum(point1, initialPoint);
+            }
+
+            var point2 = calculator.Mult(multipleCount, initialPoint);
+
+            if (point1.Equals(point2))
+            {
+                Console.Write(".");
+                return;
+            }
+
+            throw new ArithmeticException("Точки, полученные сложением и умножение, отличаются при multipleCount = "
+                                          + multipleCount);
+        }
+
+        private static void Test4()
+        {
+            BigInteger fieldOrder = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
+            BigInteger x = 3;
+            BigInteger y = 2;
+            BigInteger z = 1;
+
+            var d = ((x * x * z * z + y * y * z * z - z * z * z * z) * (x * x * y * y).Inverse(fieldOrder)).Mod(fieldOrder);
+            
+            const int multipleCount = 73928303;
+
+            var projectiveEdwardsCurve = new ProjectiveEdwardsCurve(d, fieldOrder);
+            var pointsFactory = new PointsFactory(projectiveEdwardsCurve);
+
+            var calculator = new ProjectiveEdwardsCurvePointCalculator();
+            var initialPoint = pointsFactory.CreatePoint(x, y, z);
+            var point1 = pointsFactory.CreatePoint(x, y, z);
+            for (var i = 0; i < multipleCount - 1; i++)
+            {
+                point1 = calculator.Sum(point1, initialPoint);
+
+                var gcd = BigInteger.GreatestCommonDivisor(point1.ParameterZ, fieldOrder);
+                if (gcd != BigInteger.One)
+                {
+                    Console.WriteLine("divider = " + gcd);
+                    return;
+                }
+                
+              //  Console.WriteLine(point1);
+              //  Console.WriteLine(point1.ToEdwardsCurvePoint());
+            }
+        }
+        
+        private static void Test5()
+        {
+            BigInteger fieldOrder = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
+            BigInteger x = 3;
+            BigInteger y = 2;
+            BigInteger z = 1;
+
+            var d = ((x * x * z * z + y * y * z * z - z * z * z * z) * (x * x * y * y).Inverse(fieldOrder)).Mod(fieldOrder);
+
+            var projectiveEdwardsCurve = new ProjectiveEdwardsCurve(d, fieldOrder);
+            var pointsFactory = new PointsFactory(projectiveEdwardsCurve);
+
+            var calculator = new ProjectiveEdwardsCurvePointCalculator();
+            var point1 = pointsFactory.CreatePoint(x, y, z);
+            
+            var b1 = 73928303;
+            BigInteger p = 2;
+            while (p < b1)
+            {
+                var pr = p;
+                while (pr < b1)
+                {
+                    point1 = calculator.Mult(p, point1);
+                    
+                    var gcd = BigInteger.GreatestCommonDivisor(point1.ParameterZ, fieldOrder);
+                    if (gcd != BigInteger.One)
+                    {
+                        Console.WriteLine("divider = " + gcd);
+                        return;
+                    }
+                    
+                    pr *= p;
+                }
+                p = BigIntegerExtensions.NextPrimaryMillerRabin(p);
+            }
+        }
+
+        private static void Test6()
+        {
+            Console.WriteLine("ProjectiveEdwardsLenstra results: ");
+            var n = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
+            var multThreadLenstra = new MultithreadLenstra<ProjectiveEdwardsLenstra>();
+
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            var res = multThreadLenstra.LenstraMultiThreadFastResult(n, 160);
+            stopWatch.Stop();
+            
+            Console.WriteLine(res);
+            Console.WriteLine("Elapsed ms: " + stopWatch.ElapsedMilliseconds);
+        }
+
+        private static void Test7()
+        {
+            Console.WriteLine("ClassicLenstra results: ");
+            var n = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
+            var multThreadLenstra = new MultithreadLenstra<ClassicLenstra>();
+            
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            var res = multThreadLenstra.LenstraMultiThreadFastResult(n, 160);
+            stopWatch.Stop();
+
+            Console.WriteLine(res);
+            Console.WriteLine("Elapsed ms: " + stopWatch.ElapsedMilliseconds);
+        }
+
+        private static void Test8()
+        {
+            Console.WriteLine("AffineEdwardsLenstra results: ");
+            var n = BigInteger.Parse("73928303")*BigInteger.Parse("73928293");
+            var multThreadLenstra = new MultithreadLenstra<AffineEdwardsLenstra>();
+            
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            var res = multThreadLenstra.LenstraMultiThreadFastResult(n, 160);
+            stopWatch.Stop();
+
+            Console.WriteLine(res);
+            Console.WriteLine("Elapsed ms: " + stopWatch.ElapsedMilliseconds);
+        }
+    }
+}
+
+
+
+Utils
+BigIntegerExtensions.cs
+namespace Utils
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Numerics;
+    using LenstraAlgorithm;
+
+    /// <summary> Методы, дополняющие BigInteger </summary>
+    public static class BigIntegerExtensions
+    {
+        private static Dictionary<BigInteger, int> _pR;
+
+        /// <summary> Возвращает случайное число строго меньшее 'n' </summary>
+        /// <param name="random"> Объект - генератор случайных чисел </param>
+        public static BigInteger GetNextRandom(Random random, BigInteger n)
+        {
+            var bytesN = n.ToByteArray();
+            var bytesa = new byte[bytesN.Length];
+            random.NextBytes(bytesa);
+            var a = BigInteger.Abs(new BigInteger(bytesa));
+            if (a >= n)
+            {
+                return a.Mod(n);
+            }
+
+            return a;
+        }
+
+        /// <summary>
+        ///     Возвращает случайное число меньшее 'N'.
+        ///     Используется в проверке простоты Миллер-Рабина
+        /// </summary>
+        private static BigInteger RandomIntegerBelow(BigInteger N)
+        {
+            var random = new Random();
+            var bytes = N.ToByteArray();
+            BigInteger R;
+
+            do
+            {
+                random.NextBytes(bytes);
+                bytes[bytes.Length - 1] &= 0x7F; //force sign bit to positive
+                R = new BigInteger(bytes);
+            } while (R >= N);
+
+            return R;
+        }
+
+        /// <summary>
+        ///     Проверка простоты Миллера-Рабина.
+        ///     По умолчанию проводится 100 раундов
+        /// </summary>
+        public static bool IsPrimaryMillerRabin(BigInteger n, int k = 100)
+        {
+            if (n <= 1)
+            {
+                return false;
+            }
+
+            if (n == 2)
+            {
+                return true;
+            }
+
+            if (n % 2 == 0)
+            {
+                return false;
+            }
+
+            BigInteger s = 0, d = n - 1;
+            while (d % 2 == 0)
+            {
+                d /= 2;
+                s++;
+            }
+
+            for (var i = 0; i < k; i++)
+            {
+                var a = RandomIntegerBelow(n - 1);
+                var x = BigInteger.ModPow(a, d, n);
+                if (x == 1 || x == n - 1)
+                {
+                    continue;
+                }
+
+                for (var j = 0; j < s - 1; j++)
+                {
+                    x = x * x % n;
+                    if (x == 1)
+                    {
+                        return false;
+                    }
+
+                    if (x == n - 1)
+                    {
+                        break;
+                    }
+                }
+
+                if (x != n - 1)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary> Возвращает следующее простое число после R </summary>
+        public static BigInteger NextPrimaryMillerRabin(BigInteger R)
+        {
+            R++;
+            if (IsPrimaryMillerRabin(R))
+            {
+                return R;
+            }
+
+            if (R % 2 == 0)
+            {
+                R++;
+            }
+
+            while (!IsPrimaryMillerRabin(R))
+            {
+                R += 2;
+            }
+
+            return R;
+        }
+
+        [Obsolete("Не работает корректно")]
+        public static int Jacobi(long a, long n)
+        {
+            var s = 0;
+            long b = a, e = 0, m, n1;
+            if (a == 0)
+            {
+                return 0;
+            }
+
+            if (a == 1)
+            {
+                return 1;
+            }
+
+            while ((b & 1) == 0)
+            {
+                b >>= 1;
+                e++;
+            }
+
+            var a1 = b;
+            m = n % 8;
+            if ((e & 1) != 0)
+            {
+                s = 1;
+            }
+            else if (m == 1 || m == 7)
+            {
+                s = +1;
+            }
+            else if (m == 3 || m == 5)
+            {
+                s = -1;
+            }
+
+            if (n % 4 == 3 && a1 % 4 == 3)
+            {
+                s = -s;
+            }
+
+            if (a1 != 1)
+            {
+                n1 = n % a1;
+            }
+            else
+            {
+                n1 = 1;
+            }
+
+            return s * Jacobi(n1, a1);
+        }
+
+        /// <summary>
+        ///     Precondition: a, n >= 0; n is odd
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public static long jacobi(long a, long n)
+        {
+            long ans = 0;
+
+            if (a == 0)
+            {
+                ans = n == 1 ? 1 : 0;
+            }
+            else if (a == 2)
+            {
+                switch (n % 8)
+                {
+                    case 1:
+                    case 7:
+                        ans = 1;
+                        break;
+                    case 3:
+                    case 5:
+                        ans = -1;
+                        break;
+                }
+            }
+            else if (a >= n)
+            {
+                ans = jacobi(a % n, n);
+            }
+            else if (a % 2 == 0)
+            {
+                ans = jacobi(2, n) * jacobi(a / 2, n);
+            }
+            else
+            {
+                ans = a % 4 == 3 && n % 4 == 3 ? -jacobi(n, a) : jacobi(n, a);
+            }
+
+            return ans;
+        }
+
+
+        /// <summary> Факторизация числа на простые делители </summary>
+        /// <param name="n">Факторизуемое число</param>
+        /// <typeparam name="TLenstra">Сервис, реализующий алгоритм Ленстры</typeparam>
+        /// <returns>Словарь, содержащий разложение по степеням</returns>
+        public static Dictionary<BigInteger, int> Factorize<TLenstra>(BigInteger n) where TLenstra : ILenstra, new()
+        {
+            _pR = new Dictionary<BigInteger, int>();
+            if (IsPrimaryMillerRabin(n))
+            {
+                _pR.Add(n, 1);
+                return _pR;
+            }
+
+            foreach (var i in new BigInteger[] {2, 3, 5, 7, 11})
+            {
+                if (n % i == 0)
+                {
+                    _pR.Add(i, 1);
+                    n /= i;
+                }
+            }
+
+            foreach (var i in new BigInteger[] {2, 3, 5, 7, 11})
+            {
+                while (n % i == 0)
+                {
+                    _pR[i]++;
+                    n /= i;
+                }
+            }
+
+            if (IsPrimaryMillerRabin(n))
+            {
+                _pR.Add(n, 1);
+                return _pR;
+            }
+
+            try
+            {
+                var multithreadLenstra = new MultithreadLenstra<TLenstra>();
+                FactorizeInner(n, multithreadLenstra);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Проблема при факторизации числа ");
+                Console.WriteLine(n);
+                Console.WriteLine(e);
+                throw;
+            }
+
+            return _pR;
+        }
+
+        private static void FactorizeInner<TLenstra>(BigInteger n, MultithreadLenstra<TLenstra> multithreadLenstra)
+            where TLenstra : ILenstra, new()
+        {
+            if (n == BigInteger.One)
+            {
+                return;
+            }
+
+            if (IsPrimaryMillerRabin(n))
+            {
+                _pR.Add(n, 1);
+                return;
+            }
+
+            var result = multithreadLenstra.LenstraMultiThreadFastResult(n, 160);
+            if (result != null)
+            {
+                var divider = result.Value;
+                if (IsPrimaryMillerRabin(divider))
+                {
+                    _pR.Add(divider, 1);
+                    n /= divider;
+                    while (n % divider == 0)
+                    {
+                        _pR[divider]++;
+                        n /= divider;
+                    }
+
+                    FactorizeInner(n, multithreadLenstra);
+                }
+                else
+                {
+                    FactorizeInner(n / divider, multithreadLenstra);
+                    FactorizeInner(divider, multithreadLenstra);
+                }
+            }
+        }
+    }
+}
+
+ExtraBigIntegerExtensions.cs
+namespace Utils
+{
+    using System.Numerics;
+
+    public static class ExtraBigIntegerExtensions
+    {
+        public static BigInteger Mod(this BigInteger a, BigInteger p)
+        {
+            if (a.Sign >= 0)
+                return a % p;
+
+            var modP = a % p;
+
+            if (modP < 0)
+            {
+                return modP + p;
+            }
+            
+            return modP;
+        }
+        
+        /// <summary> Найти обратный элемент к "а" в поле размерности "p" </summary>
+        /// <param name="a">Число</param>
+        /// <param name="p">Размерность поля</param>
+        public static BigInteger Inverse(this BigInteger a, BigInteger p)
+        {
+            if (a < 0)
+            {
+                a = a % p + p;
+            }
+            if (a > p)
+            {
+                a = a % p;
+            }
+            BigInteger d, x, y;
+            ExtendedEuclid(a, p, out x, out y, out d);
+
+            if (d == BigInteger.One) return x;
+
+            return 0;
+        }
+        
+        /// <summary>
+        /// Расширенный алгоритм Евклида
+        /// ax+by=GCA(a,b)
+        /// </summary>
+        private static void ExtendedEuclid(BigInteger a, BigInteger b, out BigInteger x, out BigInteger y, out BigInteger d)
+        {
+            BigInteger q, r, x1, x2, y1, y2;
+
+            if (b == 0)
+            {
+                d = a; x = 1; y = 0;
+                return;
+            }
+
+            x2 = 1; x1 = 0; y2 = 0; y1 = 1;
+
+            while (b > 0)
+            {
+                q = a / b; r = a - q * b;
+                x = x2 - q * x1; y = y2 - q * y1;
+
+                a = b;
+                b = r;
+
+                x2 = x1;
+                x1 = x;
+                y2 = y1;
+                y1 = y;
+            }
+
+            d = a;
+            x = x2; y = y2;
+        }
+
+    }
+}
+
+GcdFoundException.cs
+namespace Utils
+{
+    using System;
+    using System.Numerics;
+
+    /// <summary> Исключение для выхода из алгоритма Ленстры </summary>
+    public class GcdFoundException : Exception
+    {
+        public GcdFoundException(BigInteger greatestCommonDivisor, string message = null)
+        {
+            Message = message ?? "Найден НОД!";
+            GreatestCommonDivisor = greatestCommonDivisor;
+        }
+
+        public new string Message { get; set; }
+        public BigInteger GreatestCommonDivisor { get; set; }
+    }
+}
+
+
+
