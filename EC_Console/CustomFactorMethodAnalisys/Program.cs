@@ -1,22 +1,21 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Text.RegularExpressions;
-using EdwardsCurves.ProjectiveEdwardsCurves.Lenstra;
-using LenstraAlgorithm;
-
-namespace CustomFactorMethodAnalisys
+﻿namespace CustomFactorMethodAnalisys
 {
+    using System;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
+    using System.Numerics;
+    using System.Text.RegularExpressions;
+    using EdwardsCurves.ProjectiveEdwardsCurves.Lenstra;
+    using LenstraAlgorithm;
+
     /// <summary>
-    /// Анализ результатов среднего времени работы реализованного алгоритма быстрой факторизации на основе ЭК
+    ///     Анализ результатов среднего времени работы реализованного алгоритма быстрой факторизации на основе ЭК
     /// </summary>
     internal class Program
     {
-        
         public static string SemiprimesResourceDir = @"E:\Stash\diplom\EC_Console\SemiPrimeNumbersGenerator\Resources";
-        
+
         public static void Main(string[] args)
         {
             /*
@@ -27,9 +26,9 @@ namespace CustomFactorMethodAnalisys
              остальные варианты алгоритма прекращают своё выполнение. 
              */
 
-            const int semiprimesPerDim = 10; 
+            const int semiprimesPerDim = 20;
             const int startDim = 4;
-            const int endDim = 7;
+            const int endDim = 20;
             var numberRegex = new Regex(@"\d+");
             var semiprimesFiles = Directory.GetFiles(SemiprimesResourceDir)
                 .Select(fileName =>
@@ -52,14 +51,14 @@ namespace CustomFactorMethodAnalisys
                     MinDividerSize = fileInfo.MinDividerDigits
                 })
                 .ToArray();
-            
-            Console.Write("dim\tfast\tstd");
+
+            Console.WriteLine("dim\tfast\tstd");
             foreach (var numbersPackage in numbersPackages)
             {
                 var numbers = numbersPackage.Numbers;
                 var fastTimes = numbers.Select(GetMsOfFastAlg).Where(x => x.success).Select(x => x.ms).ToArray();
                 var stndTimes = numbers.Select(GetMsOfStandartAlg).Where(x => x.success).Select(x => x.ms).ToArray();
-                    
+
                 Console.Write(numbersPackage.MinDividerSize + "\t");
                 Console.Write($"{fastTimes.Average():F2}\t{stndTimes.Average():F2}\n");
             }
@@ -68,8 +67,9 @@ namespace CustomFactorMethodAnalisys
         private static (bool success, double ms) GetMsOfFastAlg(BigInteger n)
         {
             var multithreadLenstra = new MultithreadLenstra<ProjectiveEdwardsLenstra>();
-            
+
             var stopWatch = new Stopwatch();
+            stopWatch.Start();
             var divider = multithreadLenstra.LenstraMultiThreadFastResult(n, Environment.ProcessorCount);
             stopWatch.Stop();
 
@@ -80,6 +80,7 @@ namespace CustomFactorMethodAnalisys
         {
             var projectiveEdwardsLenstra = new ProjectiveEdwardsLenstra();
             var stopWatch = new Stopwatch();
+            stopWatch.Start();
             var result = projectiveEdwardsLenstra.GetDivider(n, new Random());
             stopWatch.Stop();
 
