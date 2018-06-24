@@ -27,10 +27,11 @@
                     {
                         ProjectName = words[0],
                         RelativeFileName = string.Join("\\", words.Skip(1)),
-                        dto.FileName
+                        dto.FileName,
+                        Link = @"https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/" + dto.MainPart.Replace('\\', '/')
                     };
                 });
-
+            
             var groups = csFileNames.GroupBy(x => x.ProjectName);
 
             var sourceCodeFile = @"E:\Stash\diplom\CsFileContentGrabbes\CsFileContentGrabbes\SourceCode.txt";
@@ -45,13 +46,14 @@
             
             foreach (var group in groups)
             {
-                WriteLine(group.Key);
+                WriteLine("Проект \"" + group.Key + "\"");
                 var projFiles = group.ToList();
-
-                var relativeFileNames = projFiles.Select(x => x.RelativeFileName);
+                
                 foreach (var projFile in projFiles)
                 {
                     WriteLine(projFile.RelativeFileName);
+                    WriteLine(projFile.Link);
+                    
                     foreach (var line in File.ReadAllLines(projFile.FileName))
                     {
                         WriteLine(line);

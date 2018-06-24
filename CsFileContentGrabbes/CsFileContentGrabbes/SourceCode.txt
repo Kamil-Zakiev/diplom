@@ -1,7 +1,8 @@
-Код актуален на дату: 11.05.2018
+Код актуален на дату: 13.05.2018
 
-AnalizingEllepticCurveResult
+Проект "AnalizingEllepticCurveResult"
 ParsedLenstraFactorizationResult.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/AnalizingEllepticCurveResult/ParsedLenstraFactorizationResult.cs
 using System;
 using System.Numerics;
 
@@ -28,6 +29,7 @@ namespace AnalizingEllepticCurveResult
 }
 
 Program.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/AnalizingEllepticCurveResult/Program.cs
 namespace AnalizingEllepticCurveResult
 {
     using System;
@@ -241,6 +243,7 @@ namespace AnalizingEllepticCurveResult
 }
 
 Statistic.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/AnalizingEllepticCurveResult/Statistic.cs
 namespace AnalizingEllepticCurveResult
 {
     public class Statistic
@@ -255,6 +258,7 @@ namespace AnalizingEllepticCurveResult
 }
 
 SuccessedInfo.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/AnalizingEllepticCurveResult/SuccessedInfo.cs
 namespace AnalizingEllepticCurveResult
 {
     public class SuccessedInfo
@@ -269,8 +273,9 @@ namespace AnalizingEllepticCurveResult
 
 
 
-ClassesAnalisys
+Проект "ClassesAnalisys"
 CurveClass.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/ClassesAnalisys/CurveClass.cs
 namespace ClassesAnalisys
 {
     /// <summary> Класс эллиптической кривой </summary>
@@ -285,6 +290,7 @@ namespace ClassesAnalisys
 }
 
 CurveInfo.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/ClassesAnalisys/CurveInfo.cs
 namespace ClassesAnalisys
 {
     using System;
@@ -318,6 +324,7 @@ namespace ClassesAnalisys
 }
 
 Program.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/ClassesAnalisys/Program.cs
 namespace ClassesAnalisys
 {
     using System;
@@ -444,6 +451,7 @@ namespace ClassesAnalisys
 }
 
 Classificators\ClassificatorFactory.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/ClassesAnalisys/Classificators/ClassificatorFactory.cs
 namespace ClassesAnalisys.Classificators
 {
     using System;
@@ -470,6 +478,7 @@ namespace ClassesAnalisys.Classificators
 }
 
 Classificators\ClassifyingItem.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/ClassesAnalisys/Classificators/ClassifyingItem.cs
 namespace ClassesAnalisys.Classificators
 {
     using System;
@@ -503,6 +512,7 @@ namespace ClassesAnalisys.Classificators
 }
 
 Classificators\ConstantsBasedClassificator.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/ClassesAnalisys/Classificators/ConstantsBasedClassificator.cs
 namespace ClassesAnalisys.Classificators
 {
     using Analisys.Classificators;
@@ -543,6 +553,7 @@ namespace ClassesAnalisys.Classificators
 }
 
 Classificators\CurveBaseInfo.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/ClassesAnalisys/Classificators/CurveBaseInfo.cs
 namespace ClassesAnalisys.Classificators
 {
     public class CurveBaseInfo
@@ -559,6 +570,7 @@ namespace ClassesAnalisys.Classificators
 }
 
 Classificators\FieldOrderBasedClassificator.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/ClassesAnalisys/Classificators/FieldOrderBasedClassificator.cs
 namespace Analisys.Classificators
 {
     using System;
@@ -595,8 +607,9 @@ namespace Analisys.Classificators
 
 
 
-ClassesDataGeneration
+Проект "ClassesDataGeneration"
 Program.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/ClassesDataGeneration/Program.cs
 namespace ClassesDataGeneration
 {
     using System;
@@ -643,8 +656,9 @@ namespace ClassesDataGeneration
 
 
 
-CustomFactorMethodAnalisys
+Проект "CustomFactorMethodAnalisys"
 Program.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/CustomFactorMethodAnalisys/Program.cs
 namespace CustomFactorMethodAnalisys
 {
     using System;
@@ -738,8 +752,9 @@ namespace CustomFactorMethodAnalisys
 
 
 
-EC_Console
+Проект "EC_Console"
 Program.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/EC_Console/Program.cs
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -854,6 +869,7 @@ namespace EC_Console
 }
 
 Test.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/EC_Console/Test.cs
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -918,6 +934,7 @@ namespace EC_Console
 }
 
 EllepticCurve\EllepticCurve.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/EC_Console/EllepticCurve/EllepticCurve.cs
 using System;
 using System.Linq;
 using System.Numerics;
@@ -1186,6 +1203,7 @@ namespace EC_Console
 }
 
 EllepticCurve\PointOfEC.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/EC_Console/EllepticCurve/PointOfEC.cs
 using System.Numerics;
 
 namespace EC_Console
@@ -1285,6 +1303,7 @@ namespace EC_Console
 }
 
 Lenstra\ClassicLenstra.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/EC_Console/Lenstra/ClassicLenstra.cs
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -1457,8 +1476,9 @@ namespace EC_Console
 
 
 
-EdwardsCurves
+Проект "EdwardsCurves"
 IEdwardsCurve.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/EdwardsCurves/IEdwardsCurve.cs
 namespace EdwardsCurves
 {
     using System.Numerics;
@@ -1473,6 +1493,7 @@ namespace EdwardsCurves
 }
 
 PointsFactory.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/EdwardsCurves/PointsFactory.cs
 namespace EdwardsCurves
 {
     using System;
@@ -1552,6 +1573,7 @@ namespace EdwardsCurves
 }
 
 AffineEdwardsCurves\AffineEdwardsCurve.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/EdwardsCurves/AffineEdwardsCurves/AffineEdwardsCurve.cs
 namespace EdwardsCurves.AffineEdwardsCurves
 {
     using System.Numerics;
@@ -1584,6 +1606,7 @@ namespace EdwardsCurves.AffineEdwardsCurves
 }
 
 AffineEdwardsCurves\AffineEdwardsCurvePoint.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/EdwardsCurves/AffineEdwardsCurves/AffineEdwardsCurvePoint.cs
 namespace EdwardsCurves.AffineEdwardsCurves
 {
     using System.Numerics;
@@ -1632,6 +1655,7 @@ namespace EdwardsCurves.AffineEdwardsCurves
 }
 
 AffineEdwardsCurves\AffineEdwardsCurvePointCalculator.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/EdwardsCurves/AffineEdwardsCurves/AffineEdwardsCurvePointCalculator.cs
 namespace EdwardsCurves.AffineEdwardsCurves
 {
     using System;
@@ -1708,6 +1732,7 @@ namespace EdwardsCurves.AffineEdwardsCurves
 }
 
 AffineEdwardsCurves\Lenstra\AffineEdwardsLenstra.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/EdwardsCurves/AffineEdwardsCurves/Lenstra/AffineEdwardsLenstra.cs
 namespace EdwardsCurves.AffineEdwardsCurves.Lenstra
 {
     using System;
@@ -1792,6 +1817,7 @@ namespace EdwardsCurves.AffineEdwardsCurves.Lenstra
 }
 
 ProjectiveEdwardsCurves\ProjectiveEdwardsCurve.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/EdwardsCurves/ProjectiveEdwardsCurves/ProjectiveEdwardsCurve.cs
 namespace EdwardsCurves.ProjectiveEdwardsCurves
 {
     using System.Numerics;
@@ -1818,6 +1844,7 @@ namespace EdwardsCurves.ProjectiveEdwardsCurves
 }
 
 ProjectiveEdwardsCurves\ProjectiveEdwardsCurvePoint.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/EdwardsCurves/ProjectiveEdwardsCurves/ProjectiveEdwardsCurvePoint.cs
 namespace EdwardsCurves.ProjectiveEdwardsCurves
 {
     using System.Numerics;
@@ -1874,6 +1901,7 @@ namespace EdwardsCurves.ProjectiveEdwardsCurves
 }
 
 ProjectiveEdwardsCurves\ProjectiveEdwardsCurvePointCalculator.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/EdwardsCurves/ProjectiveEdwardsCurves/ProjectiveEdwardsCurvePointCalculator.cs
 namespace EdwardsCurves.ProjectiveEdwardsCurves
 {
     using System;
@@ -1955,6 +1983,7 @@ namespace EdwardsCurves.ProjectiveEdwardsCurves
 }
 
 ProjectiveEdwardsCurves\Lenstra\ProjectiveEdwardsLenstra.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/EdwardsCurves/ProjectiveEdwardsCurves/Lenstra/ProjectiveEdwardsLenstra.cs
 namespace EdwardsCurves.ProjectiveEdwardsCurves.Lenstra
 {
     using System;
@@ -2062,8 +2091,9 @@ namespace EdwardsCurves.ProjectiveEdwardsCurves.Lenstra
 
 
 
-EllepticCurveResultGeneration
+Проект "EllepticCurveResultGeneration"
 Program.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/EllepticCurveResultGeneration/Program.cs
 namespace EllepticCurveResultGeneration
 {
     using System;
@@ -2246,8 +2276,9 @@ namespace EllepticCurveResultGeneration
 
 
 
-LenstraAlgorithm
+Проект "LenstraAlgorithm"
 IEllepticCurve.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/LenstraAlgorithm/IEllepticCurve.cs
 namespace LenstraAlgorithm
 {
     using System.Numerics;
@@ -2261,6 +2292,7 @@ namespace LenstraAlgorithm
 }
 
 ILenstra.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/LenstraAlgorithm/ILenstra.cs
 namespace LenstraAlgorithm
 {
     using System;
@@ -2287,6 +2319,7 @@ namespace LenstraAlgorithm
 }
 
 MultithreadLenstra.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/LenstraAlgorithm/MultithreadLenstra.cs
 namespace LenstraAlgorithm
 {
     using System;
@@ -2448,6 +2481,7 @@ namespace LenstraAlgorithm
 }
 
 Dto\EEndType.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/LenstraAlgorithm/Dto/EEndType.cs
 namespace LenstraAlgorithm.Dto
 {
     /// <summary> Контекст остановки факторизации </summary>
@@ -2462,6 +2496,7 @@ namespace LenstraAlgorithm.Dto
 }
 
 Dto\FactorizeTimeResult.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/LenstraAlgorithm/Dto/FactorizeTimeResult.cs
 namespace LenstraAlgorithm.Dto
 {
     using System;
@@ -2503,6 +2538,7 @@ namespace LenstraAlgorithm.Dto
 }
 
 Dto\LenstraEdges.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/LenstraAlgorithm/Dto/LenstraEdges.cs
 namespace LenstraAlgorithm.Dto
 {
     using System.Numerics;
@@ -2519,6 +2555,7 @@ namespace LenstraAlgorithm.Dto
 }
 
 Dto\LenstraFactorizationResult.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/LenstraAlgorithm/Dto/LenstraFactorizationResult.cs
 namespace LenstraAlgorithm.Dto
 {
     using System;
@@ -2560,8 +2597,9 @@ namespace LenstraAlgorithm.Dto
 
 
 
-PointsSumPerformanceAnalisys
+Проект "PointsSumPerformanceAnalisys"
 Program.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/PointsSumPerformanceAnalisys/Program.cs
 namespace PointsSumPerformanceAnalisys
 {
     using System;
@@ -2759,8 +2797,9 @@ namespace PointsSumPerformanceAnalisys
 
 
 
-SemiPrimeNumbersGenerator
+Проект "SemiPrimeNumbersGenerator"
 Program.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/SemiPrimeNumbersGenerator/Program.cs
 namespace SemiPrimeNumbersGenerator
 {
     using System;
@@ -2826,8 +2865,9 @@ namespace SemiPrimeNumbersGenerator
 
 
 
-TestProject
+Проект "TestProject"
 EdwardCurvesTest.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/TestProject/EdwardCurvesTest.cs
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -3088,6 +3128,7 @@ namespace TestProject
 }
 
 Program.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/TestProject/Program.cs
 using System;
 using System.Diagnostics;
 using System.Numerics;
@@ -3306,8 +3347,9 @@ namespace TestProject
 
 
 
-Utils
+Проект "Utils"
 BigIntegerExtensions.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/Utils/BigIntegerExtensions.cs
 namespace Utils
 {
     using System;
@@ -3630,6 +3672,7 @@ namespace Utils
 }
 
 ExtraBigIntegerExtensions.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/Utils/ExtraBigIntegerExtensions.cs
 namespace Utils
 {
     using System.Numerics;
@@ -3710,6 +3753,7 @@ namespace Utils
 }
 
 GcdFoundException.cs
+https://github.com/Kamil-Zakiev/diplom/blob/new_magister_diplom/EC_Console/Utils/GcdFoundException.cs
 namespace Utils
 {
     using System;

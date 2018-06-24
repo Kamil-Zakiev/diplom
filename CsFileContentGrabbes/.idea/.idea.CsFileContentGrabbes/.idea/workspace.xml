@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ca032c36-8676-40c7-b14e-493a52765a12" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/CsFileContentGrabbes/SourceCode.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../EC_Console/CustomFactorMethodAnalisys/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../EC_Console/CustomFactorMethodAnalisys/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.CsFileContentGrabbes/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.CsFileContentGrabbes/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CsFileContentGrabbes/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/CsFileContentGrabbes/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CsFileContentGrabbes/SourceCode.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CsFileContentGrabbes/SourceCode.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -13,25 +14,34 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="Program.cs" pinned="false" current-in-tab="true">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="Program.cs" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/CsFileContentGrabbes/Program.cs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="758">
-              <caret line="66" column="31" selection-start-line="66" selection-start-column="31" selection-end-line="66" selection-end-column="31" />
+            <state relative-caret-position="173">
+              <caret line="54" column="45" lean-forward="true" selection-start-line="54" selection-start-column="45" selection-end-line="54" selection-end-column="45" />
               <folding>
-                <marker date="1526045539583" expanded="true" signature="30:2453" ph="{...}" />
-                <marker date="1526045539583" expanded="true" signature="43:132" ph="..." />
-                <marker date="1526045539583" expanded="true" signature="245:2451" ph="{...}" />
-                <marker date="1526045539583" expanded="true" signature="298:2445" ph="{...}" />
-                <marker date="1526045539583" expanded="true" signature="700:814" ph="{...}" />
-                <marker date="1526045539583" expanded="true" signature="846:1179" ph="{...}" />
-                <marker date="1526045539583" expanded="true" signature="975:1160" ph="{...}" />
-                <marker date="1526045539583" expanded="true" signature="1591:1655" ph="{...}" />
-                <marker date="1526045539583" expanded="true" signature="1710:2367" ph="{...}" />
-                <marker date="1526045539583" expanded="true" signature="1946:2270" ph="{...}" />
-                <marker date="1526045539583" expanded="true" signature="2101:2186" ph="{...}" />
+                <marker date="1526224001045" expanded="true" signature="30:2631" ph="{...}" />
+                <marker date="1526224001045" expanded="false" signature="43:132" ph="..." />
+                <marker date="1526224001045" expanded="true" signature="245:2629" ph="{...}" />
+                <marker date="1526224001045" expanded="true" signature="298:2623" ph="{...}" />
+                <marker date="1526224001045" expanded="true" signature="700:814" ph="{...}" />
+                <marker date="1526224001045" expanded="true" signature="846:1324" ph="{...}" />
+                <marker date="1526224001045" expanded="true" signature="975:1305" ph="{...}" />
+                <marker date="1526224001045" expanded="true" signature="1748:1812" ph="{...}" />
+                <marker date="1526224001045" expanded="true" signature="1867:2545" ph="{...}" />
+                <marker date="1526224001045" expanded="true" signature="2057:2448" ph="{...}" />
+                <marker date="1526224001045" expanded="true" signature="2279:2364" ph="{...}" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SourceCode.txt" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/CsFileContentGrabbes/SourceCode.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="285">
+              <caret line="19" column="50" lean-forward="true" selection-start-line="19" selection-start-column="50" selection-end-line="19" selection-end-column="50" />
             </state>
           </provider>
         </entry>
@@ -60,7 +70,7 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1912" />
+    <option name="x" value="-8" />
     <option name="y" value="-8" />
     <option name="width" value="1936" />
     <option name="height" value="1056" />
@@ -73,7 +83,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
       <pane id="SolutionExplorer">
         <subPane>
           <expand>
@@ -92,6 +101,7 @@
         <option name="show-file-system" value="false" />
         <option name="show-all-items" value="false" />
       </pane>
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -158,11 +168,12 @@
       <option name="presentableId" value="Default" />
       <updated>1526043976312</updated>
       <workItem from="1526043978596" duration="2301000" />
+      <workItem from="1526222992913" duration="1843000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2301000" />
+    <option name="totallyTimeSpent" value="4144000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -174,32 +185,32 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1912" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="right" id="Errors In Solution" />
-      <window_info anchor="bottom" id="Event Log" side_tool="true" />
-      <window_info anchor="bottom" id="Unit Tests" />
-      <window_info anchor="bottom" id="Database Changes" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Version Control" />
+      <window_info anchor="right" id="Errors In Solution" order="3" />
+      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
+      <window_info anchor="bottom" id="Unit Tests" order="7" />
+      <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.6165577" />
-      <window_info anchor="bottom" id="Terminal" />
-      <window_info anchor="bottom" id="NuGet" />
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.25266525" />
-      <window_info anchor="bottom" id="Docker" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Build" weight="0.32897604" />
-      <window_info anchor="right" id="Database" />
-      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Terminal" order="7" />
+      <window_info anchor="bottom" id="NuGet" order="7" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2553305" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Build" order="7" weight="0.32897604" />
+      <window_info anchor="right" id="Database" order="3" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info id="Favorites" side_tool="true" />
+      <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
-      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Find" order="1" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -209,30 +220,50 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/CsFileContentGrabbes/SourceCode.txt">
+    <entry file="file://$PROJECT_DIR$/CsFileContentGrabbes/Program.cs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="375">
-          <caret line="25" column="29" selection-start-line="25" selection-start-column="29" selection-end-line="25" selection-end-column="29" />
+        <state relative-caret-position="990">
+          <caret line="66" column="31" selection-start-line="66" selection-start-column="31" selection-end-line="66" selection-end-column="31" />
+          <folding>
+            <marker date="1526224001045" expanded="true" signature="30:2631" ph="{...}" />
+            <marker date="1526224001045" expanded="false" signature="43:132" ph="..." />
+            <marker date="1526224001045" expanded="true" signature="245:2629" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="298:2623" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="700:814" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="846:1324" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="975:1305" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="1748:1812" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="1867:2545" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="2057:2448" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="2279:2364" ph="{...}" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CsFileContentGrabbes/Program.cs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="758">
-          <caret line="66" column="31" selection-start-line="66" selection-start-column="31" selection-end-line="66" selection-end-column="31" />
+        <state relative-caret-position="173">
+          <caret line="54" column="45" lean-forward="true" selection-start-line="54" selection-start-column="45" selection-end-line="54" selection-end-column="45" />
           <folding>
-            <marker date="1526045539583" expanded="true" signature="30:2453" ph="{...}" />
-            <marker date="1526045539583" expanded="true" signature="43:132" ph="..." />
-            <marker date="1526045539583" expanded="true" signature="245:2451" ph="{...}" />
-            <marker date="1526045539583" expanded="true" signature="298:2445" ph="{...}" />
-            <marker date="1526045539583" expanded="true" signature="700:814" ph="{...}" />
-            <marker date="1526045539583" expanded="true" signature="846:1179" ph="{...}" />
-            <marker date="1526045539583" expanded="true" signature="975:1160" ph="{...}" />
-            <marker date="1526045539583" expanded="true" signature="1591:1655" ph="{...}" />
-            <marker date="1526045539583" expanded="true" signature="1710:2367" ph="{...}" />
-            <marker date="1526045539583" expanded="true" signature="1946:2270" ph="{...}" />
-            <marker date="1526045539583" expanded="true" signature="2101:2186" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="30:2631" ph="{...}" />
+            <marker date="1526224001045" expanded="false" signature="43:132" ph="..." />
+            <marker date="1526224001045" expanded="true" signature="245:2629" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="298:2623" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="700:814" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="846:1324" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="975:1305" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="1748:1812" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="1867:2545" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="2057:2448" ph="{...}" />
+            <marker date="1526224001045" expanded="true" signature="2279:2364" ph="{...}" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CsFileContentGrabbes/SourceCode.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="19" column="50" lean-forward="true" selection-start-line="19" selection-start-column="50" selection-end-line="19" selection-end-column="50" />
         </state>
       </provider>
     </entry>
