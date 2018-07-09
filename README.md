@@ -1,7 +1,3 @@
-<h3>Дипломная работа.</h3>
-<h4> Задачи</h4>
-<ol>
-	<li>
-		Алгоритм Ленстры. Многопоточность. Доработать завершение всех потоков при успешном разложении числа. 1,5 часа.
-	</li>
-</ol>
+<h3>Analysis of elliptic curve</h3>
+<p>This app is a tool for my master's dissertation where I explore Lenstra's method parameters to speed it up.</p>
+<p>Lensra's factorization method is implemented with standart elliptic curves (Weierstrass form) and elliptic curves in Edwards form</p>
