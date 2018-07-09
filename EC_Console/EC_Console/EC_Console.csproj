@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>EC_Console</RootNamespace>
     <AssemblyName>EC_Console</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -42,19 +42,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Utils\BigIntegerExtensions.cs" />
+    <Compile Include="Test.cs" />
     <Compile Include="EllepticCurve\EllepticCurve.cs" />
-    <Compile Include="Lenstra\Lenstra.cs" />
+    <Compile Include="Lenstra\ClassicLenstra.cs" />
     <Compile Include="EllepticCurve\PointOfEC.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Lenstra\ZeroDivideException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resource\TwoPrimesMultiple.txt" />
+    <ProjectReference Include="..\LenstraAlgorithm\LenstraAlgorithm.csproj">
+      <Project>{18cf89f3-a1b0-44cc-ae40-500d33946921}</Project>
+      <Name>LenstraAlgorithm</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utils\Utils.csproj">
+      <Project>{7c44ec61-eb15-423b-b98f-a5b65178c42b}</Project>
+      <Name>Utils</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
